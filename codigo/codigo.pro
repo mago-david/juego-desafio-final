@@ -1,35 +1,29 @@
-QT       += core gui
-
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
-
-CONFIG += c++17
-
-# You can make your code fail to compile if it uses deprecated APIs.
-# In order to do so, uncomment the following line.
-#DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
+QT       += core gui widgets
+CONFIG   += c++17
 
 SOURCES += \
-    entidadFisica.cpp \
-    jugador.cpp \
+    capitan.cpp \
+    capitanN1.cpp \
     main.cpp \
     mainwindow.cpp \
-    obstaculo.cpp \
-    vector2D.cpp \
-    zona.cpp
+    nivel1.cpp \
+    objetoCircular.cpp \
+    vistaN1.cpp \
+    vistaNivel.cpp \
+    zona.cpp \
+    obstaculo.cpp
 
 HEADERS += \
-    datos.h \
-    entidadFisica.h \
-    jugador.h \
+    capitan.h \
+    capitanN1.h \
     mainwindow.h \
-    obstaculo.h \
-    vector2D.h \
-    zona.h
+    datos.h \
+    nivel1.h \
+    objetoCircular.h \
+    vistaN1.h \
+    vistaNivel.h \
+    zona.h \
+    obstaculo.h
 
 FORMS += \
     mainwindow.ui
-
-# Default rules for deployment.
-qnx: target.path = /tmp/$${TARGET}/bin
-else: unix:!android: target.path = /opt/$${TARGET}/bin
-!isEmpty(target.path): INSTALLS += target

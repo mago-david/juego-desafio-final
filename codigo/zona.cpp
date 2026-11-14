@@ -1,9 +1,9 @@
 #include "zona.h"
-//#include "datos.h"
+#include "datos.h"
 #include <stdexcept>
 #include <cmath>
 using namespace std;
-zona::zona(const vector2D& esquina_, double ancho_, double alto_)
+zona::zona(const QPointF& esquina_, double ancho_, double alto_)
     : esquina(esquina_), ancho(1.0), alto(1.0)
 {
     setAncho(ancho_);
@@ -11,7 +11,7 @@ zona::zona(const vector2D& esquina_, double ancho_, double alto_)
 }
 
 //acceso
-const vector2D& zona::getEsquina() const
+const QPointF& zona::getEsquina() const
 { return esquina; }
 
 double zona::getAncho() const
@@ -20,7 +20,7 @@ double zona::getAncho() const
 double zona::getAlto() const
 { return alto; }
 
-void zona::setEsquina(const vector2D& e)
+void zona::setEsquina(const QPointF& e)
 { esquina = e; }
 
 void zona::setAncho(double a) {
@@ -36,28 +36,37 @@ void zona::setAlto(double a) {
 }
 //bordes
 double zona::getIzquierda() const
-{ return esquina.getX(); }
+{ return esquina.x(); }
 
 double zona::getDerecha() const
-{ return esquina.getX() + ancho; }
+{ return esquina.x() + ancho; }
 
 double zona::getArriba() const
-{ return esquina.getY(); }
+{ return esquina.y(); }
 
 double zona::getAbajo() const
-{ return esquina.getY() + alto; }
+{ return esquina.y() + alto; }
 
-//adentro?
-bool zona::contiene(const entidadFisica& e) const
-{
-    const vector2D& c = e.getPosicion();
-    return c.getX() >= getIzquierda() && c.getX() <= getDerecha()
-           && c.getY() >= getArriba()    && c.getY() <= getAbajo();
+//operadores
+zona& zona::operator=(const zona& o) {
+    if (this != &o) {
+        esquina = o.esquina;
+        ancho   = o.ancho;
+        alto    = o.alto;
+    }
+    return *this;
 }
 
+bool zona::operator==(const zona& o) const {
+    return esquina == o.esquina
+           && abs(ancho - o.ancho) <= datos::EPSILON
+           && abs(alto - o.alto) <= datos::EPSILON;
+}
 
-
-
-
-
-
+//adentro?
+bool zona::contiene(const objetoCircular& e) const
+{
+    const QPointF& c = e.getPosicion();
+    return c.x() >= getIzquierda() && c.x() <= getDerecha()
+           && c.y() >= getArriba()    && c.y() <= getAbajo();
+}
