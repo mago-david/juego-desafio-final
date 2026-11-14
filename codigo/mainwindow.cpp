@@ -1,14 +1,13 @@
 #include "mainwindow.h"
-#include "ui_mainwindow.h"
+#include "vistaN1.h"
+#include "datos.h"
 
-MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent)
-    , ui(new Ui::MainWindow)
+MainWindow::MainWindow(QWidget* parent)
+    : QMainWindow(parent), vista(nullptr)
 {
-    ui->setupUi(this);
-}
-
-MainWindow::~MainWindow()
-{
-    delete ui;
+    vista = new vistaN1(this);
+    setCentralWidget(vista);
+    setFixedSize(datos::ANCHO_ESCENA, datos::ALTO_ESCENA);
+    setWindowTitle("Nivel 1");
+    vista->iniciar();
 }

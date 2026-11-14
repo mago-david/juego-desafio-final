@@ -1,8 +1,8 @@
-#ifndef JUGADOR_H
-#define JUGADOR_H
-#include "entidadFisica.h"
+#ifndef CAPITAN_H
+#define CAPITAN_H
+#include "objetoCircular.h"
 #include "datos.h"
-class jugador:public entidadFisica
+class capitan:public objetoCircular
 {
 private:
     int vidas;
@@ -11,9 +11,10 @@ private:
     double T_veloz;
     bool enNube;
 public:
-    jugador(const vector2D& pos, const vector2D& vel, double masa_, double radio_,
+    capitan(const QPointF& pos, const QPointF& vel, double masa_, double radio_,
             bool usaGravedad_ = true, int vidas_ = datos::VIDAS_INICIALES,
             int vidasMax_ = datos::VIDAS_INICIALES);
+    capitan(const capitan& o) = default;
     //movimiento
     void actualizar(double dt) override;
     //acceso
@@ -27,13 +28,15 @@ public:
     void setT_invulnerable(double t);
     void setT_veloz(double t);
     void setEnNube(bool n);
+    //operadores
+    capitan& operator=(const capitan& o);
+    bool operator==(const capitan& o) const;
     //jugabilidad
     bool recibirDanio();
     bool ganarVida();
-    void morir();
     bool estaVivo()const;
     double getLimiteVel()const;
     double getBufoVelocidad()const;
 };
 
-#endif // JUGADOR_H
+#endif // CAPITAN_H
