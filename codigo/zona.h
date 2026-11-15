@@ -1,21 +1,22 @@
 #ifndef ZONA_H
 #define ZONA_H
-#include "vector2D.h"
-#include "entidadFisica.h"
+#include <QPointF>
+#include "objetoCircular.h"
 class zona
 {
 private:
-    vector2D esquina;
+    QPointF esquina;
     double ancho;
     double alto;
 public:
-    zona(const vector2D& esquina_, double ancho_, double alto_);
+    zona(const QPointF& esquina_, double ancho_, double alto_);
+    zona(const zona& o) = default;
 
     //acceso
-    const vector2D& getEsquina() const;
+    const QPointF& getEsquina() const;
     double getAncho() const;
     double getAlto() const;
-    void setEsquina(const vector2D& e);
+    void setEsquina(const QPointF& e);
     void setAncho(double a);
     void setAlto(double a);
     //bordes
@@ -23,7 +24,10 @@ public:
     double getDerecha() const;
     double getArriba() const;
     double getAbajo() const;
+    //operadores
+    zona& operator=(const zona& o);
+    bool operator==(const zona& o) const;
     //esta adentro?
-    bool contiene(const entidadFisica& e) const;
+    bool contiene(const objetoCircular& e) const;
 };
 #endif // ZONA_H
