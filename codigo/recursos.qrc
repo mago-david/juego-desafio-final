@@ -1,0 +1,28 @@
+<RCC>
+    <qresource prefix="/">
+        <file>capitan/quieto/1.png</file>
+        <file>capitan/quieto/2.png</file>
+        <file>capitan/quieto/3.png</file>
+        <file>capitan/quieto/4.png</file>
+        <file>capitan/quieto/5.png</file>
+        <file>capitan/agachar/6.png</file>
+        <file>capitan/agachar/7.png</file>
+        <file>capitan/agachar/8.png</file>
+        <file>capitan/caminar/9.png</file>
+        <file>capitan/caminar/10.png</file>
+        <file>capitan/caminar/11.png</file>
+        <file>capitan/caminar/12.png</file>
+        <file>capitan/caminar/13.png</file>
+        <file>capitan/correr/14.png</file>
+        <file>capitan/correr/15.png</file>
+        <file>capitan/correr/16.png</file>
+        <file>capitan/correr/17.png</file>
+        <file>capitan/correr/18.png</file>
+        <file>capitan/salto/19.png</file>
+        <file>capitan/salto/20.png</file>
+        <file>capitan/salto/21.png</file>
+        <file>capitan/fondo/1.png</file>
+        <file>capitan/medio/2.png</file>
+        <file>capitan/frente/3.png</file>
+    </qresource>
+</RCC>
