@@ -39,6 +39,8 @@ public:
     bool saltar();
     void resolverPlataformas(const std::vector<obstaculo>& plataformas);
     bool bajarPlataforma();
+    //colicion con circulo
+    bool esGolpeado(const objetoCircular& o);
 };
 
 #endif // CAPITANN1_H

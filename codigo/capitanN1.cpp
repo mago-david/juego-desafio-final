@@ -6,7 +6,7 @@ using namespace std;
 
 const double VEL_SALTO=350.0;
 const double TOLERANCIA_SUELO = 1.0;
-
+const int CABEZA_EXTRA=24;
 //capitanN1::capitanN1() {}
 capitanN1::capitanN1(const QPointF& pos, int vidas_)
     : capitan(pos, QPointF(0.0, 0.0), 1.0, 20.0,
@@ -118,6 +118,16 @@ void capitanN1::resolverPlataformas(const vector<obstaculo>& plataformas)
             if(posicionAnterior.y() + r >o.getArriba()+TOLERANCIA_SUELO)
                 continue;
         }
+        //esto es para evitar error con la hitbox
+        else if(velocidad.y()<0.0//va hacia arriba
+                && posicion.x() >= o.getIzquierda() && posicion.x() <= o.getDerecha()
+                && posicion.y() >= o.getAbajo()//abajo de un bloque
+                && posicion.y() - (r + CABEZA_EXTRA) < o.getAbajo())//aun con ru radio mas lo que le falta abajo
+        {
+            posicion.setY(o.getAbajo() + r + CABEZA_EXTRA);
+            velocidad.setY(0.0);
+        }
+
         o.colisionar(*this,0.0);
         //en el primer verifica que el punto mas bajo este arriba de la plataforma
         //en los otros 2 que su x este entre los extremos del rec
@@ -131,7 +141,6 @@ void capitanN1::resolverPlataformas(const vector<obstaculo>& plataformas)
         saltosRestantes=1;
 }
 
-
 bool capitanN1:: bajarPlataforma()
 {
     if(!enSuelo)
@@ -140,7 +149,22 @@ bool capitanN1:: bajarPlataforma()
     return true;
 }
 
+bool capitanN1::esGolpeado(const objetoCircular& o)
+{
+    //aqui tomamos que el jugador es un rectangulo pa q sea mejor
+    const QPointF c = getPosicion();
+    const double r  = getRadio();
+    const QPointF p = o.getPosicion();
 
+    //los puntos donde se chocarian
+    const double qx = max(c.x() - r, min(p.x(), c.x() + r));
+    const double qy = max(c.y() - r - CABEZA_EXTRA, min(p.y(), c.y() + r));
+
+    const double dx = p.x() - qx;
+    const double dy = p.y() - qy;
+    const double rp = o.getRadio();
+    return dx * dx + dy * dy <= rp * rp;
+}
 
 
 
