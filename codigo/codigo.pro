@@ -1,0 +1,38 @@
+QT       += core gui widgets
+CONFIG   += c++17
+
+SOURCES += \
+    capitan.cpp \
+    capitanN1.cpp \
+    efecto.cpp \
+    main.cpp \
+    mainwindow.cpp \
+    muroperseguidor.cpp \
+    nivel1.cpp \
+    objetoCircular.cpp \
+    vistaN1.cpp \
+    vistaNivel.cpp \
+    zona.cpp \
+    obstaculo.cpp\
+
+
+HEADERS += \
+    capitan.h \
+    capitanN1.h \
+    efecto.h \
+    mainwindow.h \
+    datos.h \
+    muroperseguidor.h \
+    nivel1.h \
+    objetoCircular.h \
+    vistaN1.h \
+    vistaNivel.h \
+    zona.h \
+    obstaculo.h\
+
+
+FORMS += \
+    mainwindow.ui
+
+RESOURCES += \
+    recursos.qrc
