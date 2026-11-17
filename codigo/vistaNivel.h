@@ -2,6 +2,10 @@
 #define VISTANIVEL_H
 #include <QGraphicsView>
 #include <QElapsedTimer>
+#include <QGraphicsEllipseItem>
+#include <QPen>
+#include <QBrush>
+#include "proyectil.h"
 
 class QGraphicsScene;
 class QTimer;
@@ -35,6 +39,12 @@ protected:
     void keyPressEvent(QKeyEvent* e) override;
     void keyReleaseEvent(QKeyEvent* e) override;
     void focusOutEvent(QFocusEvent* e) override;
+
+    //cositas proyectiles
+    void crearDibujos(const std::vector<proyectil>& pool,
+                      QVector<QGraphicsEllipseItem*>& items, const QColor& color);
+    void dibujarPool(const std::vector<proyectil>& pool,
+                     const QVector<QGraphicsEllipseItem*>& items);
 public:
     //"momentos"
     void iniciar();
