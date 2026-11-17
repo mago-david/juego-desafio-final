@@ -37,14 +37,18 @@ bool obstaculo::operator==(const obstaculo& o) const
 //colisiones
 bool obstaculo::tocado(const objetoCircular& e)const
 {
-    const QPointF& c = e.getPosicion();
-    double qx = max(getIzquierda(),min(c.x(), getDerecha()));
-    double qy = max(getArriba(),min(c.y(), getAbajo()));
-    double dx = c.x() - qx;
-    double dy = c.y() - qy;
-    double r  = e.getRadio();
+    return tocaCirculo(e.getPosicion(), e.getRadio());
+}
+
+bool obstaculo::tocaCirculo(const QPointF& c, double r) const
+{
+    const double qx = max(getIzquierda(), min(c.x(), getDerecha()));
+    const double qy = max(getArriba(),    min(c.y(), getAbajo()));
+    const double dx = c.x() - qx;
+    const double dy = c.y() - qy;
     return dx * dx + dy * dy <= r * r;
 }
+
 bool obstaculo::colisionar(objetoCircular& e,double coefRestitucion) const
 {
     if (coefRestitucion < 0.0 || coefRestitucion > 1.0)

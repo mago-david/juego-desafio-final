@@ -29,6 +29,7 @@ public:
     // o si esta apoyado (velocidad perpendicular menor que UMBRAL_REPOSO).
     // Cada quien pasa su coeficiente (0 = aterriza sin rebotar, 1 = elastico,entre medio inelastico).
     bool colisionar(objetoCircular& e, double coefRestitucion) const;
+    bool tocaCirculo(const QPointF& c, double r) const;
 };
 
 #endif // OBSTACULO_H
