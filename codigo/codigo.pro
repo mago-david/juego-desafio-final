@@ -4,26 +4,34 @@ CONFIG   += c++17
 SOURCES += \
     capitan.cpp \
     capitanN1.cpp \
+    capitanN2.cpp \
     main.cpp \
     mainwindow.cpp \
     nivel1.cpp \
+    nivel2.cpp \
     objetoCircular.cpp \
     vistaN1.cpp \
+    vistaN2.cpp \
     vistaNivel.cpp \
     zona.cpp \
-    obstaculo.cpp
+    obstaculo.cpp\
+    proyectil.cpp
 
 HEADERS += \
     capitan.h \
     capitanN1.h \
+    capitanN2.h \
     mainwindow.h \
     datos.h \
     nivel1.h \
+    nivel2.h \
     objetoCircular.h \
     vistaN1.h \
+    vistaN2.h \
     vistaNivel.h \
     zona.h \
-    obstaculo.h
+    obstaculo.h\
+    proyectil.h
 
 FORMS += \
     mainwindow.ui
