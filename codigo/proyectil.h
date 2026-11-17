@@ -14,11 +14,11 @@ public:
     proyectil(const proyectil& o) = default;
 
     //lo usamos para reutilizar
-    void reiniciar(const QPointF& pos,const QPointF& vel);
+    void reiniciar(const QPointF& pos,const QPointF& vel, int reboresMax);
     void registrarRebote();
 
     //acceso
-    int    getRebotesRestantes() const;
+    int    getRebotesMax() const;
     double getCoefRestitucion() const;
     bool   estaActivo() const;
     void setRebotesMax(int r);
