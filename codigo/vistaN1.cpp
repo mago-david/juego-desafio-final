@@ -22,6 +22,9 @@ vistaN1::vistaN1(QWidget* parent)
     dibujarFondo();
     dibujarMapa();
     dibujarPersonaje();
+    //proyectiles
+    crearDibujos(nivel.getBalas(), dibujoBalas, Qt::black);
+    crearDibujos(nivel.getLacrimogenas(), dibujoLacrimogenas, Qt::darkGreen);
 }
 void vistaN1::agregarCapa(const QString& ruta, double factor, int z)
 {
@@ -203,6 +206,8 @@ void vistaN1::dibujar(double a)
     dibujoPersonaje->setPos(pos);
      actualizarSprite();
     actualizarFondo(pos);
+    dibujarPool(nivel.getBalas(), dibujoBalas);
+    dibujarPool(nivel.getLacrimogenas(), dibujoLacrimogenas);
     centerOn(pos);
 
 }
@@ -255,7 +260,32 @@ bool vistaN1::getTeclaA() const
 bool vistaN1::getTeclaD() const
 { return teclaD; }
 
+void vistaN1::crearDibujos(const vector<proyectil>& pool,
+                           QVector<QGraphicsEllipseItem*>& items, const QColor& color)
+{
+    items.reserve(int(pool.size()));
+    for (const proyectil& p : pool)
+    {
+        const double r = p.getRadio();
+        QGraphicsEllipseItem* it = escena->addEllipse(-r, -r, 2.0 * r, 2.0 * r,
+                                 QPen(Qt::NoPen), QBrush(color));
+        it->setZValue(4); // sobre el mapa (0), bajo el capitan (5)
+        it->setVisible(false);// la escena es la duena del item
+        items.append(it);
+    }
+}
 
+void vistaN1::dibujarPool(const vector<proyectil>& pool,
+                          const QVector<QGraphicsEllipseItem*>& items)
+{
+    for (int i = 0; i < int(pool.size()); ++i)
+    {
+        const bool activo = pool[i].estaActivo();
+        items[i]->setVisible(activo);
+        if (activo)
+            items[i]->setPos(pool[i].getPosicion());
+    }
+}
 
 
 
