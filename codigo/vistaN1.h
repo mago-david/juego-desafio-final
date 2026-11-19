@@ -38,9 +38,9 @@ private:
     //proyectiles
     QVector<QGraphicsEllipseItem*> dibujoBalas;
     QVector<QGraphicsEllipseItem*> dibujoLacrimogenas;
-    void crearDibujos(const vector<proyectil>& pool,
+    void crearDibujos(const std::vector<proyectil>& pool,
                       QVector<QGraphicsEllipseItem*>& items, const QColor& color);
-    void dibujarPool(const vector<proyectil>& pool,
+    void dibujarPool(const std::vector<proyectil>& pool,
                      const QVector<QGraphicsEllipseItem*>& items);
 protected:
     void avanzarLogica(double dt) override;

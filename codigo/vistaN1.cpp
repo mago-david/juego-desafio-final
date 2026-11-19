@@ -10,7 +10,7 @@
 #include <QPen>
 #include <QDebug>
 #include <cmath>
-
+using namespace std;
 vistaN1::vistaN1(QWidget* parent)
     : vistaNivel(parent),
     nivel(),dibujoPersonaje(nullptr),dibujoSprite(nullptr),
