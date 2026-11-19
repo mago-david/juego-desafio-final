@@ -5,8 +5,12 @@ SOURCES += \
     capitan.cpp \
     capitanN1.cpp \
     capitanN2.cpp \
+    efecto.cpp \
+    esbirro.cpp \
+    jefe.cpp \
     main.cpp \
     mainwindow.cpp \
+    muroPerseguidor.cpp \
     nivel1.cpp \
     nivel2.cpp \
     objetoCircular.cpp \
@@ -21,8 +25,12 @@ HEADERS += \
     capitan.h \
     capitanN1.h \
     capitanN2.h \
+    efecto.h \
+    esbirro.h \
+    jefe.h \
     mainwindow.h \
     datos.h \
+    muroPerseguidor.h \
     nivel1.h \
     nivel2.h \
     objetoCircular.h \
