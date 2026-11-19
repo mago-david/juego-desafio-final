@@ -81,13 +81,13 @@ void nivel1::construirMapa()
 
 void nivel1::actualizar(double dt) {
     lanzarProyectiles(dt);
-    for (efecto& e : nubes)
-    {
-        e.actualizar(dt);
-        e.aplicar(personaje);
+    personaje.setEnNube(false);
+    for (efecto& n : nubes) {
+        n.actualizar(dt);
+        n.aplicar(personaje);
     }
-    personaje.actualizar(dt);                      // 1. mueve (la entrada ya esta aplicada)
-    personaje.resolverPlataformas(plataformas);    // 2. corrige choques con el mapa
+    personaje.actualizar(dt);
+    personaje.resolverPlataformas(plataformas);
     actualizarProyectiles(dt);
 }
 
