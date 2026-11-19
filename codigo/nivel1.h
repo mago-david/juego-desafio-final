@@ -4,16 +4,17 @@
 #include "capitanN1.h"
 #include "obstaculo.h"
 #include "proyectil.h"
-using namespace std;
+#include "efecto.h"
 class nivel1
 {
 private:
     //datos de obstaculos y personaje
-    vector<obstaculo> plataformas;
+    std::vector<obstaculo> plataformas;
     capitanN1 personaje;
     //los proyectiles
-    vector<proyectil> balas;
-    vector<proyectil> lacrimogenas;
+    std::vector<proyectil> balas;
+    std::vector<proyectil> lacrimogenas;
+    std::vector<efecto> nubes;
     //ubicaciones donde se va a disparar y tal
     int primeraAltura;
     int disparosRestantes;
@@ -25,7 +26,7 @@ private:
     void construirMapa();
     //ataques proyectil
     void construirProy();
-    bool lanzarEn(vector<proyectil>& pool, const QPointF& pos,
+    bool lanzarEn(std::vector<proyectil>& pool, const QPointF& pos,
                   const QPointF& vel, int rebotes);
     void chocarCon(proyectil& p) const;
     void actualizarProyectiles(double dt);
@@ -33,6 +34,7 @@ private:
     void elegirAlturas();
     void dispararSiguiente();
     bool puntoLibre(double x, double y, double r) const;
+    void lanzarNube(const QPointF& centro);
 public:
     nivel1();
     nivel1(const nivel1& o)=default;
@@ -51,16 +53,19 @@ public:
     void setPersonaje(const capitanN1& p);
     void setAnchoMapa(double a);
 
-    const vector<proyectil>& getBalas() const;
-    const vector<proyectil>& getLacrimogenas() const;
+    const std::vector<proyectil>& getBalas() const;
+    const std::vector<proyectil>& getLacrimogenas() const;
     int getPrimeraAltura() const;
     int getDisparosRestantes() const;
     double getTReloj() const;
-    void setBalas(const vector<proyectil>& b);
-    void setLacrimogenas(const vector<proyectil>& p);
+    void setBalas(const std::vector<proyectil>& b);
+    void setLacrimogenas(const std::vector<proyectil>& p);
     void setPrimeraAltura(int i);
     void setDisparosRestantes(int n);
     void setTReloj(double t);
+
+    const std::vector<efecto>& getNubes() const;
+    void setNubes(const std::vector<efecto>& n);
 
     void setDireccionPersonaje(int d);
     bool saltar();

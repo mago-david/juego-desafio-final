@@ -3,6 +3,7 @@
 #include "datos.h"
 #include <cmath>
 #include <algorithm>
+using namespace std;
 
 namespace
 {
@@ -28,6 +29,10 @@ const int    BALAS_POR_ATAQUE   = 5;     // debe ser <= N_BALAS
 const int    LACRIS_POR_ATAQUE  = 2;     // debe ser <= N_LACRIMOGENAS
 const double INTERVALO_DISPARO  = 0.2;   // s entre disparos de un mismo ataque
 const double ESPERA_ATAQUE      = 3.0;   // s entre el ultimo disparo y el ataque siguiente (tambien el primero)
+
+const double ANCHO_NUBE    = 150.0;
+const double ALTO_NUBE     = 100.0;
+const double DURACION_NUBE = 3.0;
 }
 
 nivel1::nivel1()
@@ -76,6 +81,11 @@ void nivel1::construirMapa()
 
 void nivel1::actualizar(double dt) {
     lanzarProyectiles(dt);
+    for (efecto& e : nubes)
+    {
+        e.actualizar(dt);
+        e.aplicar(personaje);
+    }
     personaje.actualizar(dt);                      // 1. mueve (la entrada ya esta aplicada)
     personaje.resolverPlataformas(plataformas);    // 2. corrige choques con el mapa
     actualizarProyectiles(dt);
@@ -103,6 +113,12 @@ void nivel1::construirProy()
         lacrimogenas.back().setActivo(false);
     }
     //todos sin velocidad ni posicion poque no sabemos donde se dispararan
+    nubes.reserve(N_LACRIMOGENAS);
+    for (int i = 0; i < N_LACRIMOGENAS; ++i)
+    {
+        nubes.emplace_back(QPointF(), ANCHO_NUBE, ALTO_NUBE, efecto::gas, DURACION_NUBE);
+        nubes.back().setactivo(false);
+    }
 }
 
 bool nivel1::lanzarEn(vector<proyectil>& proy, const QPointF& pos,
@@ -231,9 +247,21 @@ void nivel1::actualizarProyectiles(double dt)
 
         if (!l.estaActivo())
         {
-            //aqui invoco la nube
+            lanzarNube(l.getPosicion());
         }
 
+    }
+}
+
+void nivel1::lanzarNube(const QPointF& centro)
+{
+    for (efecto& e : nubes)
+    {
+        if (!e.getactivo())
+        {
+            e.activar(QPointF(centro.x()-e.getAncho()/2.0, centro.y()-e.getAlto()/2.0), DURACION_NUBE);
+            return;
+        }
     }
 }
 //acceso
@@ -316,17 +344,30 @@ bool nivel1::saltar()
 bool nivel1::bajarPlataforma()
 { return personaje.bajarPlataforma(); }
 
+
+const vector<efecto>& nivel1::getNubes() const
+{ return nubes; }
+
+void nivel1::setNubes(const vector<efecto>& n)
+{
+    if (n.size() != nubes.size())
+        throw invalid_argument("El pool de nubes conserva su tamano fijo");
+    nubes = n;
+}
+
+
 //operadores
 nivel1& nivel1::operator=(const nivel1& o) {
     if (this != &o) {
         plataformas = o.plataformas;
         personaje   = o.personaje;
         anchoMapa   = o.anchoMapa;
-        balas             = o.balas;
-        lacrimogenas      = o.lacrimogenas;
-        primeraAltura     = o.primeraAltura;
+        balas = o.balas;
+        lacrimogenas = o.lacrimogenas;
+        primeraAltura = o.primeraAltura;
         disparosRestantes = o.disparosRestantes;
-        tReloj            = o.tReloj;
+        tReloj = o.tReloj;
+        nubes = o.nubes;
     }
     return *this;
 }
@@ -340,7 +381,8 @@ bool nivel1::operator==(const nivel1& o) const
             && primeraAltura == o.primeraAltura
             && disparosRestantes == o.disparosRestantes
             && abs(tReloj - o.tReloj) <= datos::EPSILON
-            && abs(anchoMapa - o.anchoMapa) <= datos::EPSILON;
+            && abs(anchoMapa - o.anchoMapa) <= datos::EPSILON
+            && nubes == o.nubes;
 }
 
 
