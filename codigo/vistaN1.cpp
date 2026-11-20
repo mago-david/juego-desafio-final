@@ -4,17 +4,18 @@
 #include <QGraphicsRectItem>
 #include <QGraphicsEllipseItem>
 #include <QGraphicsPixmapItem>
-#include <QImage>
-#include <QTransform>
+#include <QGraphicsColorizeEffect>
+#include <QImage>// recortar las imagenes
+#include <QTransform> // transformaciones; scale(-1, 1) voltea el sprite al mirar a la izquierda
 #include <QBrush>
-#include <QPen>
+#include <QPen> // borde de las figuras (Qt::NoPen = sin borde)
 #include <QDebug>
 #include <cmath>
 using namespace std;
 vistaN1::vistaN1(QWidget* parent)
     : vistaNivel(parent),
     nivel(),dibujoPersonaje(nullptr),dibujoSprite(nullptr),
-    teclaA(false),teclaD(false),
+    efectoDanio(nullptr),teclaA(false),teclaD(false),
     estadoAnim(QUIETO),tAnim(0.0),mirandoIzq(false)
 {
     escena->setSceneRect(0.0, 0.0, nivel.getAnchoMapa(), datos::ALTO_ESCENA);
@@ -22,9 +23,31 @@ vistaN1::vistaN1(QWidget* parent)
     dibujarFondo();
     dibujarMapa();
     dibujarPersonaje();
+    //
+    dibujarHUD();
     //proyectiles
-    crearDibujos(nivel.getBalas(), dibujoBalas, Qt::black);
-    crearDibujos(nivel.getLacrimogenas(), dibujoLacrimogenas, Qt::darkGreen);
+    //  voltear disparo hacia la izquierda
+    QPixmap spriteBala = prepararFrame(":/capitan/danio/1.png", 1.0);
+    if (!spriteBala.isNull()) {
+        spriteBala = spriteBala.scaledToHeight(12, Qt::SmoothTransformation)
+        .transformed(QTransform().scale(-1, 1));
+    }
+
+    // voltear lacrimogena a la izquierda
+    QPixmap spriteLacri = prepararFrame(":/capitan/danio/2.png", 1.0);
+    if (!spriteLacri.isNull()) {
+        spriteLacri = spriteLacri.scaledToHeight(20, Qt::SmoothTransformation)
+        .transformed(QTransform().scale(-1, 1));
+    }
+
+    crearDibujos(nivel.getBalas(), dibujoBalas, spriteBala);
+    crearDibujos(nivel.getLacrimogenas(), dibujoLacrimogenas, spriteLacri);
+
+    // Animación del gas
+    QPixmap refGas = prepararFrame(":/capitan/danio/5.png", 1.0);
+    const double escalaGas = refGas.isNull() ? 1.0 : 100.0 / refGas.height();
+    framesGas = cargarFrames("danio", 3, 7, escalaGas);
+    crearNubes();
 }
 void vistaN1::agregarCapa(const QString& ruta, double factor, int z)
 {
@@ -87,7 +110,41 @@ void vistaN1::dibujarPersonaje()
     //Z=5 encima del fondo(-10)/plataforma(-5)
     dibujoPersonaje->setZValue(5);
     dibujoSprite = new QGraphicsPixmapItem(dibujoPersonaje);
+    // Tinte rojo para el golpe; se activa solo unos instantes
+    efectoDanio = new QGraphicsColorizeEffect();
+    efectoDanio->setColor(Qt::red);
+    efectoDanio->setStrength(0.8);
+    efectoDanio->setEnabled(false);
+    dibujoSprite->setGraphicsEffect(efectoDanio);
     actualizarSprite();
+}
+void vistaN1::dibujarHUD()
+{
+    // Se cargan una sola vez, igual que los sprites: prepararFrame recorta
+    QPixmap l = prepararFrame(":/capitan/vida/1.png", 1.0);
+    QPixmap v = prepararFrame(":/capitan/vida/2.png", 1.0);
+    if (!l.isNull())
+        corazonLleno = l.scaledToHeight(32, Qt::SmoothTransformation);
+    if (!v.isNull())
+        corazonVacio = v.scaledToHeight(32, Qt::SmoothTransformation);
+
+    // Un item por cada vida maxima
+    const int total = nivel.getPersonaje().getVidasMax();
+    for (int i = 0; i < total; ++i) {
+        QGraphicsPixmapItem* c = escena->addPixmap(corazonLleno);
+        c->setZValue(100);   // por encima de todo
+        corazones.append(c);
+    }
+}
+
+void vistaN1::actualizarHUD()
+{
+    const int vidas = nivel.getPersonaje().getVidas();
+    for (int i = 0; i < corazones.size(); ++i) {
+        // lleno si todavia le queda esa vida, vacio si la perdio
+        corazones[i]->setPixmap(i < vidas ? corazonLleno : corazonVacio);
+        corazones[i]->setPos(mapToScene(QPoint(15 + i * 40, 15)));
+    }
 }
 
 QPixmap vistaN1::prepararFrame(const QString& ruta, double escala)
@@ -191,10 +248,24 @@ void vistaN1::actualizarSprite()
     //Centrar en x y apoyar los pies en la base del circulo
     dibujoSprite->setPixmap(p);
     dibujoSprite->setPos(-p.width() / 2.0, c.getRadio() - p.height());
+    // Invulnerabilidad: parpadeo
+    const double inv = c.getT_invulnerable();
+    if (inv > 0.0) {
+        dibujoSprite->setVisible(int(inv * 10.0) % 2 == 0);
+        efectoDanio->setEnabled(inv > 1.2);
+    } else {
+        dibujoSprite->setVisible(true);
+        efectoDanio->setEnabled(false);
+    }
 }
+
 void vistaN1::avanzarLogica(double dt)
 {
     nivel.actualizar(dt);
+    if (!nivel.getPersonaje().estaVivo()) {
+        actualizarHUD();
+        terminar(false);
+    }
 }
 
 void vistaN1::dibujar(double a)
@@ -206,9 +277,11 @@ void vistaN1::dibujar(double a)
     dibujoPersonaje->setPos(pos);
      actualizarSprite();
     actualizarFondo(pos);
-    dibujarPool(nivel.getBalas(), dibujoBalas);
-    dibujarPool(nivel.getLacrimogenas(), dibujoLacrimogenas);
+     dibujarPool(nivel.getBalas(), dibujoBalas, false);
+     dibujarPool(nivel.getLacrimogenas(), dibujoLacrimogenas, true);
+     actualizarNubes();
     centerOn(pos);
+    actualizarHUD();
 
 }
 
@@ -260,49 +333,39 @@ bool vistaN1::getTeclaA() const
 bool vistaN1::getTeclaD() const
 { return teclaD; }
 
-void vistaN1::crearDibujos(const vector<proyectil>& pool,
-                           QVector<QGraphicsEllipseItem*>& items, const QColor& color)
+void vistaN1::crearNubes()
 {
-    items.reserve(int(pool.size()));
-    for (const proyectil& p : pool)
+    const std::vector<efecto>& nubes = nivel.getNubes();
+    dibujoNubes.reserve(int(nubes.size()));
+    for (size_t i = 0; i < nubes.size(); ++i)
     {
-        const double r = p.getRadio();
-        QGraphicsEllipseItem* it = escena->addEllipse(-r, -r, 2.0 * r, 2.0 * r,
-                                 QPen(Qt::NoPen), QBrush(color));
-        it->setZValue(4); // sobre el mapa (0), bajo el capitan (5)
-        it->setVisible(false);// la escena es la duena del item
-        items.append(it);
+        QGraphicsPixmapItem* it = escena->addPixmap(QPixmap());
+        it->setZValue(6); // por encima del capitán (Z=5) para envolverlo en humo
+        it->setVisible(false);
+        dibujoNubes.append(it);
     }
 }
 
-void vistaN1::dibujarPool(const vector<proyectil>& pool,
-                          const QVector<QGraphicsEllipseItem*>& items)
+void vistaN1::actualizarNubes()
 {
-    for (int i = 0; i < int(pool.size()); ++i)
+    if (framesGas.isEmpty())
+        return;
+    const std::vector<efecto>& nubes = nivel.getNubes();
+    const double duracionTotal = 3.0; // misma DURACION_NUBE de nivel1.cpp
+    for (int i = 0; i < int(nubes.size()); ++i)
     {
-        const bool activo = pool[i].estaActivo();
-        items[i]->setVisible(activo);
-        if (activo)
-            items[i]->setPos(pool[i].getPosicion());
+        const bool activo = nubes[i].getactivo();
+        dibujoNubes[i]->setVisible(activo);
+        if (!activo)
+            continue;
+        double progreso = 1.0 - (nubes[i].getduracion() / duracionTotal);
+        progreso = std::max(0.0, std::min(0.999, progreso));
+        int idx = int(progreso * framesGas.size());
+        const QPixmap& frame = framesGas[idx];
+        dibujoNubes[i]->setPixmap(frame);
+        double centroX = nubes[i].getIzquierda() + nubes[i].getAncho() / 2.0;
+        double centroY = nubes[i].getArriba() + nubes[i].getAlto() / 2.0;
+        dibujoNubes[i]->setPos(centroX - frame.width() / 2.0,
+                               centroY - frame.height() / 2.0);
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

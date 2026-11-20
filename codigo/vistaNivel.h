@@ -5,12 +5,16 @@
 #include <QGraphicsEllipseItem>
 #include <QPen>
 #include <QBrush>
+#include <QString>
+#include <QPixmap>
 #include "proyectil.h"
 
 class QGraphicsScene;
+class QGraphicsRectItem;
+class QGraphicsPixmapItem;
+class QPushButton;
 class QTimer;
 class QKeyEvent;
-
 class vistaNivel:public QGraphicsView
 {
     Q_OBJECT
@@ -19,8 +23,20 @@ private:
     QElapsedTimer cronometro;
     double acumulado;
     bool pausado;
+    QTimer* relojMuerte;
+    double opacidadMuerte;
+    QGraphicsRectItem* telonNegro;
+    QGraphicsPixmapItem* spriteMoriste;
+    QPushButton* btnReintentar;
+    QPushButton* btnMenu;
+
+    void crearUI_Muerte();
+    void mostrarPantallaMuerte();
+    QPixmap recortarSprite(const QString& ruta, double altoDeseado);
+
 private slots:
     void avanzar();
+    void actualizarFundidoMuerte();
 protected:
     //la escena la hacen las hijas
     QGraphicsScene* escena;
@@ -45,6 +61,11 @@ protected:
                       QVector<QGraphicsEllipseItem*>& items, const QColor& color);
     void dibujarPool(const std::vector<proyectil>& pool,
                      const QVector<QGraphicsEllipseItem*>& items);
+    //las de abajo son los proyectiles definitivos para n1 y seguramente para n2 de momento dejar las de arriba para evitar errores
+    void crearDibujos(const std::vector<proyectil>& pool,
+                      QVector<QGraphicsPixmapItem*>& items, const QPixmap& sprite);
+    void dibujarPool(const std::vector<proyectil>& pool,
+                     const QVector<QGraphicsPixmapItem*>& items, bool rotar = false);
 public:
     //"momentos"
     void iniciar();
@@ -53,6 +74,8 @@ public:
     bool getPausado() const;
 signals:
     void terminado(bool gano);
+    void solicitarReintento();
+    void solicitarMenu();
 };
 
 #endif // VISTANIVEL_H

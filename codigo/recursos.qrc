@@ -24,5 +24,15 @@
         <file>capitan/fondo/1.png</file>
         <file>capitan/medio/2.png</file>
         <file>capitan/frente/3.png</file>
+        <file>capitan/vida/1.png</file>
+        <file>capitan/vida/2.png</file>
+        <file>capitan/vida/3.png</file>
+        <file>capitan/danio/1.png</file>
+        <file>capitan/danio/2.png</file>
+        <file>capitan/danio/3.png</file>
+        <file>capitan/danio/4.png</file>
+        <file>capitan/danio/5.png</file>
+        <file>capitan/danio/6.png</file>
+        <file>capitan/danio/7.png</file>
     </qresource>
 </RCC>
