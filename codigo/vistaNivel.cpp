@@ -89,6 +89,33 @@ void vistaNivel::focusOutEvent(QFocusEvent* e) {
     QGraphicsView::focusOutEvent(e);
 }
 
+void vistaNivel::crearDibujos(const std::vector<proyectil>& pool,
+                              QVector<QGraphicsEllipseItem*>& items, const QColor& color)
+{
+    items.reserve(int(pool.size()));
+    for (const proyectil& p : pool)
+    {
+        const double r = p.getRadio();
+        QGraphicsEllipseItem* it = escena->addEllipse(-r, -r, 2.0 * r, 2.0 * r,
+                                QPen(Qt::NoPen), QBrush(color));
+        it->setZValue(4); // sobre el mapa, bajo el capitan (5)
+        it->setVisible(false); // la escena es la duena del item
+        items.append(it);
+    }
+}
+
+void vistaNivel::dibujarPool(const std::vector<proyectil>& pool,
+                             const QVector<QGraphicsEllipseItem*>& items)
+{
+    for (int i = 0; i < int(pool.size()); ++i)
+    {
+        const bool activo = pool[i].estaActivo();
+        items[i]->setVisible(activo);
+        if (activo)
+            items[i]->setPos(pool[i].getPosicion());
+    }
+}
+
 void vistaNivel::alPerderFoco() {}
 
 double vistaNivel::getAcumulado() const
