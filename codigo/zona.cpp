@@ -67,6 +67,6 @@ bool zona::operator==(const zona& o) const {
 bool zona::contiene(const objetoCircular& e) const
 {
     const QPointF& c = e.getPosicion();
-    return c.x() >= getIzquierda() && c.x() <= getDerecha()
-           && c.y() >= getArriba()    && c.y() <= getAbajo();
+    return c.x()+e.getRadio() >= getIzquierda() && c.x()+e.getRadio() <= getDerecha()
+           && c.y()+e.getRadio() >= getArriba()    && c.y()+e.getRadio() <= getAbajo();
 }
