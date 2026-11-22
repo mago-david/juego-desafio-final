@@ -11,12 +11,14 @@ const double VEL_ESCUDO     = 450.0;
 const double RADIO_ESCUDO   = 12.0;
 const int    REBOTES_ESCUDO = 3;
 const double RETARDO_ESCUDO = 0.7;
+const int DANIO_ESCUDO    = 10;
+const int DANIO_FORTACHON = 15;
 }
 
-capitanN2::capitanN2(const QPointF& pos, int vidas_)
+capitanN2::capitanN2(const QPointF& pos, int vidas_,bool forta_)
     : capitan(pos, QPointF(0.0, 0.0), 1.0, 20.0,
               false, vidas_, VIDAS_MAX_N2),
-    direccionX(0), direccionY(0), tRecarga(0.0)
+    direccionX(0), direccionY(0), tRecarga(0.0),fortachon(forta_)
 {
     escudos.reserve(N_ESCUDOS);
     for (int i = 0; i < N_ESCUDOS; ++i) {
@@ -84,9 +86,34 @@ void capitanN2::resolverParedes(const vector<obstaculo>& paredes)
         }
     }
 }
-
-//int capitanN2::escudosGolpean(const objetoCircular& blanco)
-
+//version para el jefe
+int capitanN2::escudosGolpean(const obstaculo& blanco)
+{
+    int golpes=0;
+    for(proyectil& e: escudos)
+    {
+        if(e.estaActivo() && blanco.tocado(e))
+        {
+            e.setActivo(false);
+            ++golpes;
+        }
+    }
+    return golpes;
+}
+//version para los esbirros
+int capitanN2::escudosGolpean(const objetoCircular& blanco)
+{
+    int golpes = 0;
+    for (proyectil& e : escudos)
+    {
+        if (e.estaActivo() && e.circuloVScirculo(blanco))
+        {
+            e.setActivo(false);
+            ++golpes;
+        }
+    }
+    return golpes;
+}
 // Acceso
 int capitanN2::getDireccionX() const
 { return direccionX; }
@@ -124,6 +151,16 @@ void capitanN2::setEscudos(const vector<proyectil>& e) {
     escudos = e;
 }
 
+bool capitanN2::getFortachon() const
+{ return fortachon; }
+
+void capitanN2::setFortachon(bool f)
+{ fortachon = f; }
+
+
+int capitanN2::getDanioEscudo() const
+{ return fortachon ? DANIO_FORTACHON : DANIO_ESCUDO; }
+
 // Operadores
 capitanN2& capitanN2::operator=(const capitanN2& o) {
     if (this != &o) {
@@ -132,6 +169,7 @@ capitanN2& capitanN2::operator=(const capitanN2& o) {
         direccionY = o.direccionY;
         tRecarga   = o.tRecarga;
         escudos    = o.escudos;
+        fortachon= o.fortachon;
     }
     return *this;
 }
@@ -141,7 +179,8 @@ bool capitanN2::operator==(const capitanN2& o) const {
     && direccionX == o.direccionX
     && direccionY == o.direccionY
     && abs(tRecarga - o.tRecarga) <= datos::EPSILON
-    && escudos == o.escudos;
+    && escudos == o.escudos
+    && fortachon == o.fortachon;
 }
 
 
