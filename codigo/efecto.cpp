@@ -80,13 +80,9 @@ bool efecto::aplicar(capitan& c)
     case gas:
         c.setEnNube(true);
         return true;
-    case velocidad:
+    case bufo:
         c.setT_veloz(duracion);
-        activo = false;
-        return true;
-    case vida:
-        if (!c.ganarVida())
-            return false;
+        c.ganarVida();
         activo = false;
         return true;
     case danio: {
@@ -97,6 +93,8 @@ bool efecto::aplicar(capitan& c)
         c.setVelocidad(QPointF(lado * fuerzarebote, -fuerzarebote));
         return true;
     }
+    case multitud:
+        return c.recibirDanio();
     case explosion:
     case chorro:
         return c.recibirDanio();

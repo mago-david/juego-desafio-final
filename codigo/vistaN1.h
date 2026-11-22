@@ -5,9 +5,9 @@
 #include <QPixmap>
 #include <QVector>
 #include <QString>
-class QGraphicsEllipseItem;
-class QGraphicsPixmapItem;
-
+class QGraphicsEllipseItem; //hit box capitan
+class QGraphicsPixmapItem;// sprites personajes fondos objetos y tales
+class QGraphicsColorizeEffect;// efectos de color
 class vistaN1:public vistaNivel
 {
     Q_OBJECT
@@ -16,6 +16,7 @@ private:
     nivel1 nivel;
     QGraphicsEllipseItem* dibujoPersonaje;
     QGraphicsPixmapItem* dibujoSprite;
+    QGraphicsColorizeEffect* efectoDanio;
     bool teclaA;
     bool teclaD;
     QVector<QPixmap> animaciones[N_ESTADOS];//estado del personaje para animar
@@ -29,19 +30,20 @@ private:
     void dibujarPersonaje();
     void actualizarDireccion();
     void cargarSprites();
-    QPixmap prepararFrame(const QString& ruta, double escala);
-    QVector<QPixmap> cargarFrames(const QString& carpeta, int desde, int hasta, double escala);
     void actualizarSprite();
     void agregarCapa(const QString& ruta, double factor, int z);
     void actualizarFondo(const QPointF& pos);
-
     //proyectiles
-    QVector<QGraphicsEllipseItem*> dibujoBalas;
-    QVector<QGraphicsEllipseItem*> dibujoLacrimogenas;
-    void crearDibujos(const std::vector<proyectil>& pool,
-                      QVector<QGraphicsEllipseItem*>& items, const QColor& color);
-    void dibujarPool(const std::vector<proyectil>& pool,
-                     const QVector<QGraphicsEllipseItem*>& items);
+    QVector<QGraphicsPixmapItem*> dibujoBalas;
+    QVector<QGraphicsPixmapItem*> dibujoLacrimogenas;
+    QVector<QGraphicsPixmapItem*> dibujoNubes;
+    QVector<QPixmap> framesGas;
+    void crearNubes();
+    void actualizarNubes();
+    //bufo
+    QVector<QGraphicsPixmapItem*> dibujoBufos;
+    void crearBufos();
+    void actualizarBufos();
 protected:
     void avanzarLogica(double dt) override;
     void dibujar(double alfa) override;

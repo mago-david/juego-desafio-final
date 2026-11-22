@@ -5,6 +5,8 @@
 #include "nivel2.h"
 
 class QGraphicsEllipseItem;
+class QGraphicsRectItem;
+class QGraphicsSimpleTextItem;
 class QMouseEvent;
 
 class vistaN2:public vistaNivel
@@ -14,6 +16,11 @@ private:
     nivel2 nivel;
     QGraphicsEllipseItem* dibujoPersonaje;
     QVector<QGraphicsEllipseItem*> dibujoEscudos;
+    QGraphicsRectItem* dibujoJefe;
+    QVector<QGraphicsEllipseItem*> dibujoBalas;
+    QVector<QGraphicsRectItem*> dibujoEfectos;     // uno por efecto de la reserva
+    QVector<QGraphicsEllipseItem*> dibujoEsbirros; // uno por hueco del pool
+    QGraphicsSimpleTextItem* textoVidas;
     bool teclaW;
     bool teclaA;
     bool teclaS;
@@ -21,6 +28,11 @@ private:
 
     void dibujarArena();
     void dibujarPersonaje();
+    void dibujarJefe();
+    void crearEfectos();
+    void dibujarEfectos();
+    void crearEsbirros();
+    void dibujarEsbirros();
     void actualizarDireccion();
 protected:
     void avanzarLogica(double dt) override;

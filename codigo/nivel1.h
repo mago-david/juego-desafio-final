@@ -5,12 +5,14 @@
 #include "obstaculo.h"
 #include "proyectil.h"
 #include "efecto.h"
+#include "muroperseguidor.h"
 class nivel1
 {
 private:
     //datos de obstaculos y personaje
     std::vector<obstaculo> plataformas;
     capitanN1 personaje;
+    std::vector<efecto> manifestantes;
     //los proyectiles
     std::vector<proyectil> balas;
     std::vector<proyectil> lacrimogenas;
@@ -19,15 +21,17 @@ private:
     int primeraAltura;
     int disparosRestantes;
     double tReloj;
-
-
+    //bufo
+    std::vector<efecto> bufos;
+    void construirBufos();
     //creacion mapa
     double anchoMapa;
     void construirMapa();
+    //muro perseguidor
+    muroPerseguidor muro;
     //ataques proyectil
     void construirProy();
-    bool lanzarEn(std::vector<proyectil>& pool, const QPointF& pos,
-                  const QPointF& vel, int rebotes);
+    bool lanzarEn(std::vector<proyectil>& pool, const QPointF& pos,  const QPointF& vel, int rebotes);
     void chocarCon(proyectil& p) const;
     void actualizarProyectiles(double dt);
     void lanzarProyectiles(double dt);
@@ -52,7 +56,7 @@ public:
     void setPlataformas(const std::vector<obstaculo>& p);
     void setPersonaje(const capitanN1& p);
     void setAnchoMapa(double a);
-
+    const muroPerseguidor& getMuro() const;
     const std::vector<proyectil>& getBalas() const;
     const std::vector<proyectil>& getLacrimogenas() const;
     int getPrimeraAltura() const;
@@ -63,7 +67,8 @@ public:
     void setPrimeraAltura(int i);
     void setDisparosRestantes(int n);
     void setTReloj(double t);
-
+    const std::vector<efecto>& getBufos() const;
+    const std::vector<efecto>& getManifestantes() const;
     const std::vector<efecto>& getNubes() const;
     void setNubes(const std::vector<efecto>& n);
 
