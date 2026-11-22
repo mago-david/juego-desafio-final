@@ -29,6 +29,13 @@ private:
     QGraphicsPixmapItem* spriteMoriste;
     QPushButton* btnReintentar;
     QPushButton* btnMenu;
+    bool enPantallaFinal;
+    bool ganoNivel;
+    QGraphicsPixmapItem* spriteVictoria;
+    QPushButton* btnSiguienteNivel;
+    void crearUI_Victoria();
+    void mostrarPantallaVictoria();
+    void posicionarBotonesFinales();
 
     void crearUI_Muerte();
     void mostrarPantallaMuerte();
@@ -55,7 +62,6 @@ protected:
     void keyPressEvent(QKeyEvent* e) override;
     void keyReleaseEvent(QKeyEvent* e) override;
     void focusOutEvent(QFocusEvent* e) override;
-
     //cositas proyectiles
     void crearDibujos(const std::vector<proyectil>& pool,
                       QVector<QGraphicsEllipseItem*>& items, const QColor& color);
@@ -66,6 +72,15 @@ protected:
                       QVector<QGraphicsPixmapItem*>& items, const QPixmap& sprite);
     void dibujarPool(const std::vector<proyectil>& pool,
                      const QVector<QGraphicsPixmapItem*>& items, bool rotar = false);
+    //cositas que van en ambos niveles
+    QPixmap corazonLleno;
+    QPixmap corazonVacio;
+    QPixmap corazonExtra;
+    QVector<QGraphicsPixmapItem*> corazones;
+    QPixmap prepararFrame(const QString& ruta, double escala);
+    QVector<QPixmap> cargarFrames(const QString& carpeta, int desde, int hasta, double escala);
+    void dibujarHUD(int vidasMax);
+    void actualizarHUD(int vidas);
 public:
     //"momentos"
     void iniciar();
@@ -76,6 +91,7 @@ signals:
     void terminado(bool gano);
     void solicitarReintento();
     void solicitarMenu();
+    void solicitarSiguienteNivel();
 };
 
 #endif // VISTANIVEL_H

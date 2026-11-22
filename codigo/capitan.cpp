@@ -6,6 +6,7 @@ using namespace std;
 
 const double TIEMPO_INVULNERABLE = 1.5;
 const double FACTOR_VELOZ        = 1.5;
+const int MAX_VIDAS_EXTRA = 0;
 capitan::capitan(const QPointF& pos, const QPointF& vel, double masa_, double radio_,
                  bool usaGravedad_, int vidas_, int vidasMaximas_)
     : objetoCircular(pos, vel, masa_, radio_, usaGravedad_),vidas(0),vidasMax(1),T_invulnerable(0.0),
@@ -106,7 +107,7 @@ bool capitan::recibirDanio()
 
 bool capitan::ganarVida()
 {
-    if(vidas>=vidasMax)
+    if (vidas >= vidasMax + MAX_VIDAS_EXTRA)
         return false;
     vidas++;
     return true;

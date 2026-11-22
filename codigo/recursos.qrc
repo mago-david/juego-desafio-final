@@ -27,6 +27,8 @@
         <file>capitan/vida/1.png</file>
         <file>capitan/vida/2.png</file>
         <file>capitan/vida/3.png</file>
+        <file>capitan/vida/4.png</file>
+        <file>capitan/vida/5.png</file>
         <file>capitan/danio/1.png</file>
         <file>capitan/danio/2.png</file>
         <file>capitan/danio/3.png</file>
@@ -34,5 +36,13 @@
         <file>capitan/danio/5.png</file>
         <file>capitan/danio/6.png</file>
         <file>capitan/danio/7.png</file>
+        <file>capitan/obstaculos/1.png</file>
+        <file>capitan/obstaculos/2.png</file>
+        <file>capitan/obstaculos/3.png</file>
+        <file>capitan/obstaculos/4.png</file>
+        <file>capitan/obstaculos/5.png</file>
+        <file>capitan/obstaculos/6.png</file>
+        <file>capitan/obstaculos/7.png</file>
+        <file>capitan/obstaculos/8.png</file>
     </qresource>
 </RCC>

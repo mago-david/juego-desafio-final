@@ -28,16 +28,8 @@ private:
     void dibujarFondo();
     void dibujarMapa();
     void dibujarPersonaje();
-    // hud
-    void dibujarHUD();
-    void actualizarHUD();
-    QPixmap corazonLleno;                        // imagen del corazon con vida
-    QPixmap corazonVacio;                        // imagen del corazon perdido
-    QVector<QGraphicsPixmapItem*> corazones;
     void actualizarDireccion();
     void cargarSprites();
-    QPixmap prepararFrame(const QString& ruta, double escala);
-    QVector<QPixmap> cargarFrames(const QString& carpeta, int desde, int hasta, double escala);
     void actualizarSprite();
     void agregarCapa(const QString& ruta, double factor, int z);
     void actualizarFondo(const QPointF& pos);
@@ -48,6 +40,10 @@ private:
     QVector<QPixmap> framesGas;
     void crearNubes();
     void actualizarNubes();
+    //bufo
+    QVector<QGraphicsPixmapItem*> dibujoBufos;
+    void crearBufos();
+    void actualizarBufos();
 protected:
     void avanzarLogica(double dt) override;
     void dibujar(double alfa) override;

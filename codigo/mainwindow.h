@@ -20,6 +20,7 @@ private:
 private slots:
     void reiniciarNivel();
     void abrirMenu();
+    void siguienteNivel();
 
 public:
     explicit MainWindow(QWidget* parent = nullptr);

@@ -46,9 +46,10 @@ vistaNivel::vistaNivel(QWidget* parent)
 
 void vistaNivel::iniciar()
 {
-    acumulado=0.0;
+    acumulado = 0.0;
     cronometro.start();
-    pausado=false;
+    pausado = false;
+    enPantallaFinal = false;
     reloj->start(16);
     setFocus();
 }
@@ -62,11 +63,38 @@ void vistaNivel::pausar()
 void vistaNivel::terminar(bool gano)
 {
     pausar();
+    ganoNivel = gano;
     emit terminado(gano);
-    if (!gano)
+    if (!gano) {
         mostrarPantallaMuerte();
+        return;
+    }
+    const QPointF origenCamara = mapToScene(viewport()->rect()).boundingRect().topLeft();
+    telonNegro->setRect(origenCamara.x(), origenCamara.y(),
+                        datos::ANCHO_ESCENA, datos::ALTO_ESCENA);
+    telonNegro->setBrush(QBrush(QColor(0, 0, 0, 255)));
+    telonNegro->setVisible(true);
+    if (spriteVictoria && !spriteVictoria->pixmap().isNull()) {
+        spriteVictoria->setPos(origenCamara);
+        spriteVictoria->setVisible(true);
+    }
+    const int w = width(), h = height();
+    const int anchoBtn = 190, altoBtn = 45, sep = 20;
+    const int inicioX = (w - (anchoBtn * 3 + sep * 2)) / 2;
+    const int yPos = int(h * 0.84);
+    btnMenu->setText("Menu");
+    btnSiguienteNivel->setText("Siguiente nivel");
+    btnReintentar->setText("Reiniciar");
+    btnMenu->setGeometry(inicioX, yPos, anchoBtn, altoBtn);
+    btnSiguienteNivel->setGeometry(inicioX + anchoBtn + sep, yPos, anchoBtn, altoBtn);
+    btnReintentar->setGeometry(inicioX + (anchoBtn + sep) * 2, yPos, anchoBtn, altoBtn);
+    btnMenu->show();
+    btnSiguienteNivel->show();
+    btnReintentar->show();
+    btnMenu->raise();
+    btnSiguienteNivel->raise();
+    btnReintentar->raise();
 }
-
 //ejecucion
 void vistaNivel::avanzar()
 {
@@ -159,6 +187,79 @@ void vistaNivel::dibujarPool(const std::vector<proyectil>& pool,
         }
     }
 }
+void vistaNivel::dibujarHUD(int vidasMax)
+{
+    QPixmap l = prepararFrame(":/capitan/vida/1.png", 1.0);
+    QPixmap v = prepararFrame(":/capitan/vida/2.png", 1.0);
+    QPixmap e = prepararFrame(":/capitan/vida/4.png", 1.0);
+    if (!l.isNull())
+        corazonLleno = l.scaledToHeight(32, Qt::SmoothTransformation);
+    if (!v.isNull())
+        corazonVacio = v.scaledToHeight(32, Qt::SmoothTransformation);
+    if (!e.isNull())
+        corazonExtra = e.scaledToHeight(32, Qt::SmoothTransformation);
+    // Un item por cada vida maxima (4 en total)
+    for (int i = 0; i < vidasMax; ++i) {
+        const QPixmap& sp = (i < datos::VIDAS_INICIALES) ? corazonLleno : corazonExtra;
+        QGraphicsPixmapItem* c = escena->addPixmap(sp);
+        c->setZValue(100);
+        corazones.append(c);
+    }
+}
+void vistaNivel::actualizarHUD(int vidas)
+{;
+    const QPointF origen = mapToScene(15, 15);
+
+    for (int i = 0; i < corazones.size(); ++i) {
+        corazones[i]->setPos(origen.x() + i * 36.0, origen.y());
+
+        if (i < datos::VIDAS_INICIALES) {
+            corazones[i]->setPixmap(i < vidas ? corazonLleno : corazonVacio);
+            corazones[i]->setVisible(true);
+        } else {
+            corazones[i]->setVisible(i < vidas);
+        }
+    }
+}
+
+QPixmap vistaNivel::prepararFrame(const QString& ruta, double escala)
+{
+    QImage img(ruta);
+    if (img.isNull())
+        return QPixmap();
+    img = img.convertToFormat(QImage::Format_ARGB32);
+
+    // Calcula el rectangulo que ocupa el personaje
+    int minX = img.width(), minY = img.height(), maxX = -1, maxY = -1;
+    for (int y = 0; y < img.height(); ++y) {
+        for (int x = 0; x < img.width(); ++x) {
+            if (qAlpha(img.pixel(x, y)) >= 10) {
+                if (x < minX) minX = x;
+                if (x > maxX) maxX = x;
+                if (y < minY) minY = y;
+                if (y > maxY) maxY = y;
+            }
+        }
+    }
+    if (maxX < 0)
+        return QPixmap();
+    // Recorta el espacio vacio de la imagen original (612x408)
+    img = img.copy(minX, minY, maxX - minX + 1, maxY - minY + 1);
+    // Escala segun el factor calculado en cargarSprites()
+    QPixmap p = QPixmap::fromImage(img);
+    return p.scaled(int(p.width() * escala), int(p.height() * escala),Qt::KeepAspectRatio, Qt::SmoothTransformation);
+}
+
+QVector<QPixmap> vistaNivel::cargarFrames(const QString& carpeta, int desde, int hasta, double escala)
+{
+    QVector<QPixmap> frames;
+    for (int i = desde; i <= hasta; ++i) {
+        QPixmap p = prepararFrame(QString(":/capitan/%1/%2.png").arg(carpeta).arg(i), escala);
+        if (!p.isNull())
+            frames.append(p);
+    }
+    return frames;
+}
 
 void vistaNivel::alPerderFoco() {}
 
@@ -197,7 +298,7 @@ void vistaNivel::crearUI_Muerte()
     telonNegro->setZValue(200);
     telonNegro->setVisible(false);
    //pantalla de muerte
-    QPixmap imgMoriste = recortarSprite(":/capitan/vida/3.png", 340.0);
+    QPixmap imgMoriste = recortarSprite(":/capitan/vida/3.png",datos::ALTO_ESCENA);
     spriteMoriste = escena->addPixmap(imgMoriste);
     spriteMoriste->setZValue(201);
     spriteMoriste->setVisible(false);
@@ -227,6 +328,19 @@ void vistaNivel::crearUI_Muerte()
     btnMenu->hide();
     connect(btnReintentar, &QPushButton::clicked, this, &vistaNivel::solicitarReintento);
     connect(btnMenu,       &QPushButton::clicked, this, &vistaNivel::solicitarMenu);
+    QPixmap imgVictoria(":/capitan/vida/5.png");
+    if (!imgVictoria.isNull())
+        imgVictoria = imgVictoria.scaled(int(datos::ANCHO_ESCENA), int(datos::ALTO_ESCENA),
+                                         Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+
+    spriteVictoria = escena->addPixmap(imgVictoria);
+    spriteVictoria->setZValue(201);
+    spriteVictoria->setVisible(false);
+
+    btnSiguienteNivel = new QPushButton("2. Siguiente nivel", this);
+    btnSiguienteNivel->setStyleSheet(estiloBoton);
+    btnSiguienteNivel->hide();
+    connect(btnSiguienteNivel, &QPushButton::clicked, this, &vistaNivel::solicitarSiguienteNivel);
 }
 void vistaNivel::mostrarPantallaMuerte()
 {
@@ -238,9 +352,7 @@ void vistaNivel::mostrarPantallaMuerte()
     telonNegro->setBrush(QBrush(QColor(0, 0, 0, 0)));
     telonNegro->setVisible(true);
     if (!spriteMoriste->pixmap().isNull()) {
-        double x = origenCamara.x() + (datos::ANCHO_ESCENA - spriteMoriste->pixmap().width()) / 2.0;
-        double y = origenCamara.y() + 140.0;
-        spriteMoriste->setPos(x, y);
+        spriteMoriste->setPos(origenCamara.x(), origenCamara.y());
         spriteMoriste->setOpacity(0.0);
         spriteMoriste->setVisible(true);
     }
@@ -256,6 +368,26 @@ void vistaNivel::actualizarFundidoMuerte()
         relojMuerte->stop();
         btnReintentar->show();
         btnMenu->show();
+    }
+}
+void vistaNivel::posicionarBotonesFinales()
+{
+    const int w = width();
+    const int h = height();
+    const int anchoBtn = std::max(210, w / 6);
+    const int altoBtn  = std::max(46, h / 14);
+
+    if (ganoNivel) {
+        const int sep = 20;
+        const int inicioX = (w - (anchoBtn * 3 + sep * 2)) / 2;
+        const int yPos = int(h * 0.84);
+        btnMenu->setGeometry(inicioX, yPos, anchoBtn, altoBtn);
+        btnSiguienteNivel->setGeometry(inicioX + anchoBtn + sep, yPos, anchoBtn, altoBtn);
+        btnReintentar->setGeometry(inicioX + (anchoBtn + sep) * 2, yPos, anchoBtn, altoBtn);
+    } else {
+        const int centroX = (w - anchoBtn) / 2;
+        btnReintentar->setGeometry(centroX, int(h * 0.62), anchoBtn, altoBtn);
+        btnMenu->setGeometry(centroX, int(h * 0.62) + altoBtn + 16, anchoBtn, altoBtn);
     }
 }
 

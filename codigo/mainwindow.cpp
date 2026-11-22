@@ -9,7 +9,6 @@ MainWindow::MainWindow(QWidget* parent)
     setFixedSize(datos::ANCHO_ESCENA, datos::ALTO_ESCENA);
     cargarNivel(1);
 }
-
 void MainWindow::cargarNivel(int numeroNivel)
 {
     nivelActual = numeroNivel;
@@ -20,8 +19,9 @@ void MainWindow::cargarNivel(int numeroNivel)
         setWindowTitle("Nivel 2");
         vista = new vistaN2(this);
     }
-    connect(vista, &vistaNivel::solicitarReintento, this, &MainWindow::reiniciarNivel);
-    connect(vista, &vistaNivel::solicitarMenu,      this, &MainWindow::abrirMenu);
+    connect(vista, &vistaNivel::solicitarReintento,      this, &MainWindow::reiniciarNivel);
+    connect(vista, &vistaNivel::solicitarMenu,           this, &MainWindow::abrirMenu);
+    connect(vista, &vistaNivel::solicitarSiguienteNivel, this, &MainWindow::siguienteNivel);
     setCentralWidget(vista);
     vista->iniciar();
 }
@@ -32,4 +32,8 @@ void MainWindow::reiniciarNivel()
 void MainWindow::abrirMenu()
 {
     vista->pausar();
+}
+void MainWindow::siguienteNivel()
+{
+    cargarNivel(nivelActual + 1);
 }

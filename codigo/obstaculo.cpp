@@ -5,13 +5,17 @@
 #include <cmath>
 using namespace std;
 obstaculo::obstaculo(const QPointF& esquina_, double ancho_, double alto_,
-                     bool atravesable_):zona(esquina_, ancho_, alto_),atravesable(atravesable_)
+                     bool atravesable_, int spriteId_)
+    : zona(esquina_, ancho_, alto_),
+    atravesable(atravesable_),
+    spriteId(spriteId_)
 {
     setAncho(ancho_);
     setAlto(alto_);
 }
+
 obstaculo::obstaculo(const QPointF& esquina_, double lado)
-    :obstaculo(esquina_, lado, lado,false){}
+    : obstaculo(esquina_, lado, lado, false, 0) {}
 
 //acceso
 bool obstaculo::getAtravesable()const
@@ -19,6 +23,12 @@ bool obstaculo::getAtravesable()const
 
 void obstaculo::setAtravesable(bool a)
 {atravesable = a;}
+
+int obstaculo::getSpriteId() const
+{ return spriteId; }
+
+void obstaculo::setSpriteId(int id)
+{ spriteId = id; }
 
 //operadores
 obstaculo& obstaculo::operator=(const obstaculo& o)

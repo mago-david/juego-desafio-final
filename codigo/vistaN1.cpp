@@ -24,7 +24,7 @@ vistaN1::vistaN1(QWidget* parent)
     dibujarMapa();
     dibujarPersonaje();
     //
-    dibujarHUD();
+    dibujarHUD(nivel.getPersonaje().getVidasMax());
     //proyectiles
     //  voltear disparo hacia la izquierda
     QPixmap spriteBala = prepararFrame(":/capitan/danio/1.png", 1.0);
@@ -48,6 +48,7 @@ vistaN1::vistaN1(QWidget* parent)
     const double escalaGas = refGas.isNull() ? 1.0 : 100.0 / refGas.height();
     framesGas = cargarFrames("danio", 3, 7, escalaGas);
     crearNubes();
+    crearBufos();
 }
 void vistaN1::agregarCapa(const QString& ruta, double factor, int z)
 {
@@ -92,13 +93,42 @@ void vistaN1::dibujarFondo()
 
 void vistaN1::dibujarMapa()
 {
-    const QPen borde(Qt::black);
-    const QBrush solida(QColor(90, 90, 90));
-    const QBrush atravesable(QColor(120, 170, 255));
+    QPixmap tex[9];
+    for (int id = 1; id <= 8; ++id)
+        tex[id] = prepararFrame(QString(":/capitan/obstaculos/%1.png").arg(id), 1.0);
 
-    for (const obstaculo& o : nivel.getPlataformas())
-        escena->addRect(o.getIzquierda(), o.getArriba(), o.getAncho(), o.getAlto(),
-                        borde, o.getAtravesable() ? atravesable : solida);
+    for (const obstaculo& o : nivel.getPlataformas()) {
+        const int id = o.getSpriteId();
+        if (id <= 0 || id > 8 || tex[id].isNull())
+            continue; // paredes invisibles
+        if (id == 7 && o.getAncho() > o.getAlto() * 2) {
+            // Suelo largo
+            const int paso = 120;
+            QPixmap tile = tex[7].scaled(paso, int(o.getAlto()), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+            for (double x = o.getIzquierda(); x < o.getDerecha(); x += paso) {
+                auto* item = escena->addPixmap(tile);
+                item->setPos(x, o.getArriba());
+                item->setZValue(5);
+            }
+        } else {
+            // Vehículos , plataformas aéreas  y  muros verticales
+            QPixmap esc = tex[id].scaled(int(o.getAncho()), int(o.getAlto()),
+                                         Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+            auto* item = escena->addPixmap(esc);
+            item->setPos(o.getIzquierda(), o.getArriba());
+            item->setZValue(o.getAtravesable() ? 6 : 8);
+        }
+    }
+    // Dibujar zonas de manifestantes
+    if (!tex[8].isNull()) {
+        for (const efecto& m : nivel.getManifestantes()) {
+            QPixmap esc = tex[8].scaled(int(m.getAncho()), int(m.getAlto()),
+                                        Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+            auto* item = escena->addPixmap(esc);
+            item->setPos(m.getIzquierda(), m.getArriba());
+            item->setZValue(9);
+        }
+    }
 }
 
 void vistaN1::dibujarPersonaje()
@@ -117,73 +147,6 @@ void vistaN1::dibujarPersonaje()
     efectoDanio->setEnabled(false);
     dibujoSprite->setGraphicsEffect(efectoDanio);
     actualizarSprite();
-}
-void vistaN1::dibujarHUD()
-{
-    // Se cargan una sola vez, igual que los sprites: prepararFrame recorta
-    QPixmap l = prepararFrame(":/capitan/vida/1.png", 1.0);
-    QPixmap v = prepararFrame(":/capitan/vida/2.png", 1.0);
-    if (!l.isNull())
-        corazonLleno = l.scaledToHeight(32, Qt::SmoothTransformation);
-    if (!v.isNull())
-        corazonVacio = v.scaledToHeight(32, Qt::SmoothTransformation);
-
-    // Un item por cada vida maxima
-    const int total = nivel.getPersonaje().getVidasMax();
-    for (int i = 0; i < total; ++i) {
-        QGraphicsPixmapItem* c = escena->addPixmap(corazonLleno);
-        c->setZValue(100);   // por encima de todo
-        corazones.append(c);
-    }
-}
-
-void vistaN1::actualizarHUD()
-{
-    const int vidas = nivel.getPersonaje().getVidas();
-    for (int i = 0; i < corazones.size(); ++i) {
-        // lleno si todavia le queda esa vida, vacio si la perdio
-        corazones[i]->setPixmap(i < vidas ? corazonLleno : corazonVacio);
-        corazones[i]->setPos(mapToScene(QPoint(15 + i * 40, 15)));
-    }
-}
-
-QPixmap vistaN1::prepararFrame(const QString& ruta, double escala)
-{
-    QImage img(ruta);
-    if (img.isNull())
-        return QPixmap();
-    img = img.convertToFormat(QImage::Format_ARGB32);
-
-    // Calcula el rectangulo que ocupa el personaje
-    int minX = img.width(), minY = img.height(), maxX = -1, maxY = -1;
-    for (int y = 0; y < img.height(); ++y) {
-        for (int x = 0; x < img.width(); ++x) {
-            if (qAlpha(img.pixel(x, y)) >= 10) {
-                if (x < minX) minX = x;
-                if (x > maxX) maxX = x;
-                if (y < minY) minY = y;
-                if (y > maxY) maxY = y;
-            }
-        }
-    }
-    if (maxX < 0)
-        return QPixmap();
-    // Recorta el espacio vacio de la imagen original (612x408)
-    img = img.copy(minX, minY, maxX - minX + 1, maxY - minY + 1);
-    // Escala segun el factor calculado en cargarSprites()
-    QPixmap p = QPixmap::fromImage(img);
-    return p.scaled(int(p.width() * escala), int(p.height() * escala),Qt::KeepAspectRatio, Qt::SmoothTransformation);
-}
-
-QVector<QPixmap> vistaN1::cargarFrames(const QString& carpeta, int desde, int hasta, double escala)
-{
-    QVector<QPixmap> frames;
-    for (int i = desde; i <= hasta; ++i) {
-        QPixmap p = prepararFrame(QString(":/capitan/%1/%2.png").arg(carpeta).arg(i), escala);
-        if (!p.isNull())
-            frames.append(p);
-    }
-    return frames;
 }
 
 void vistaN1::cargarSprites()
@@ -263,28 +226,36 @@ void vistaN1::avanzarLogica(double dt)
 {
     nivel.actualizar(dt);
     if (!nivel.getPersonaje().estaVivo()) {
-        actualizarHUD();
+       actualizarHUD(nivel.getPersonaje().getVidas());
         terminar(false);
+    }
+    if (nivel.getPersonaje().getPosicion().x() >= nivel.getAnchoMapa() - 150.0) {
+        terminar(true);
+        return;
     }
 }
 
 void vistaN1::dibujar(double a)
 {
-    //el a es para evitar que la lgica y la pantalla tengan diferencia de frames
+    //el a es para evitar que la logica y la pantalla tengan diferencia de frames
     const capitanN1& c = nivel.getPersonaje();
     const QPointF pos = c.getPosicionAnterior() + (c.getPosicion() - c.getPosicionAnterior()) * a;
 
+    // La camara avanza automaticamente con el borde derecho del muro perseguidor
+    const double maxCamIzq = nivel.getAnchoMapa() - datos::ANCHO_ESCENA;
+    const double camIzq = std::min(nivel.getMuro().getDerecha(), maxCamIzq);
+    const double centroCamX = camIzq + datos::ANCHO_ESCENA / 2.0;
+
     dibujoPersonaje->setPos(pos);
-     actualizarSprite();
-    actualizarFondo(pos);
-     dibujarPool(nivel.getBalas(), dibujoBalas, false);
-     dibujarPool(nivel.getLacrimogenas(), dibujoLacrimogenas, true);
-     actualizarNubes();
-    centerOn(pos);
-    actualizarHUD();
-
+    actualizarSprite();
+    actualizarFondo(QPointF(centroCamX, pos.y()));
+    dibujarPool(nivel.getBalas(), dibujoBalas, false);
+    dibujarPool(nivel.getLacrimogenas(), dibujoLacrimogenas, true);
+    actualizarNubes();
+    actualizarBufos();
+    centerOn(centroCamX, datos::ALTO_ESCENA / 2.0);
+   actualizarHUD(nivel.getPersonaje().getVidas());
 }
-
 void vistaN1::actualizarDireccion()
 {nivel.setDireccionPersonaje((teclaD ? 1 : 0) - (teclaA ? 1 : 0));}
 
@@ -367,5 +338,35 @@ void vistaN1::actualizarNubes()
         double centroY = nubes[i].getArriba() + nubes[i].getAlto() / 2.0;
         dibujoNubes[i]->setPos(centroX - frame.width() / 2.0,
                                centroY - frame.height() / 2.0);
+    }
+}
+void vistaN1::crearBufos()
+{
+    QPixmap spriteBufo = prepararFrame(":/capitan/vida/4.png", 1.0);
+    if (!spriteBufo.isNull())
+        spriteBufo = spriteBufo.scaledToHeight(32, Qt::SmoothTransformation);
+
+    const std::vector<efecto>& bufos = nivel.getBufos();
+    dibujoBufos.reserve(int(bufos.size()));
+    for (const efecto& b : bufos)
+    {
+        QGraphicsPixmapItem* it = escena->addPixmap(spriteBufo);
+        it->setZValue(4);
+        double cx = b.getIzquierda() + b.getAncho() / 2.0;
+        double cy = b.getArriba() + b.getAlto() / 2.0;
+        it->setPos(cx - spriteBufo.width() / 2.0, cy - spriteBufo.height() / 2.0);
+        it->setVisible(b.getactivo());
+        dibujoBufos.append(it);
+    }
+}
+void vistaN1::actualizarBufos()
+{
+    const std::vector<efecto>& bufos = nivel.getBufos();
+    for (int i = 0; i < int(bufos.size()); ++i) {
+        if (dibujoBufos[i] && !bufos[i].getactivo()) {
+            escena->removeItem(dibujoBufos[i]);
+            delete dibujoBufos[i];
+            dibujoBufos[i] = nullptr;
+        }
     }
 }
