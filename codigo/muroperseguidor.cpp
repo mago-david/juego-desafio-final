@@ -1,41 +1,43 @@
-#include "muroperseguidor.h"
+#include "muroPerseguidor.h"
 #include "datos.h"
 #include <stdexcept>
 #include <cmath>
-muroperseguidor::muroperseguidor()
+muroPerseguidor::muroPerseguidor()
     : zona(QPointF(0.0, 0.0), 1.0, 1.0), velocidad(60.0), activo(true) {}
-muroperseguidor::muroperseguidor(const QPointF& esquina_, double ancho_, double alto_,
+muroPerseguidor::muroPerseguidor(const QPointF& esquina_, double ancho_, double alto_,
                                  double velocidad_)
     : zona(esquina_, ancho_, alto_), velocidad(0.0), activo(true)
 {
     setvelocidad(velocidad_);
 }
-muroperseguidor::muroperseguidor(const muroperseguidor& o)
+muroPerseguidor::muroPerseguidor(const muroPerseguidor& o)
     : zona(o), velocidad(o.velocidad), activo(o.activo) {}
-muroperseguidor::~muroperseguidor() {}
-void muroperseguidor::actualizar(double dt)
+muroPerseguidor::~muroPerseguidor() {}
+void muroPerseguidor::actualizar(double dt)
 {
     if (!activo)
         return;
     setEsquina(QPointF(getEsquina().x()+velocidad*dt,getEsquina().y()));
 }
-bool muroperseguidor::aplicar(capitan& c) const
+bool muroPerseguidor::aplicar(capitan& c) const
 {
-    if (!contiene(c))
+    if (!activo || !c.estaVivo())
+        return false;
+    if (c.getPosicion().x() > getDerecha())
         return false;
     c.setVidas(0);
     return true;
 }
-double muroperseguidor::getvelocidad()const{return velocidad;}
-bool muroperseguidor::getactivo()const{return activo;}
-void muroperseguidor::setactivo(bool a){activo = a;}
-void muroperseguidor::setvelocidad(double v)
+double muroPerseguidor::getvelocidad()const{return velocidad;}
+bool muroPerseguidor::getactivo()const{return activo;}
+void muroPerseguidor::setactivo(bool a){activo = a;}
+void muroPerseguidor::setvelocidad(double v)
 {
     if (v<0.0)
         throw std::invalid_argument("para que el muro te persiga tiene que avanzar no retroceder");
     velocidad=v;
 }
-muroperseguidor& muroperseguidor::operator=(const muroperseguidor& o)
+muroPerseguidor& muroPerseguidor::operator=(const muroPerseguidor& o)
 {
     if (this !=&o) {
         zona::operator=(o);
@@ -44,10 +46,11 @@ muroperseguidor& muroperseguidor::operator=(const muroperseguidor& o)
     }
     return *this;
 }
-bool muroperseguidor::operator==(const muroperseguidor& o) const
+bool muroPerseguidor::operator==(const muroPerseguidor& o) const
 {
     return zona::operator==(o)
     && std::abs(velocidad - o.velocidad) <= datos::EPSILON
                 && activo == o.activo;
 }
+
 
