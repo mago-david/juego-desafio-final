@@ -32,6 +32,9 @@ public:
     void setRadio(double r);
     void setUsaGravedad(bool g);
 
+    //colision
+    bool circuloVScirculo(const objetoCircular& o)const;
+
     //operadores
     objetoCircular& operator=(const objetoCircular& o);
     bool operator==(const objetoCircular& o) const;

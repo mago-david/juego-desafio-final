@@ -57,60 +57,79 @@ void nivel1::construirMapa()
     manifestantes.clear();
     const double s = Y_SUELO;
 
-    auto agregar = [this](double x, double y, double ancho, double alto,
-                          bool atravesable = false, int sprite = 0)
-    {
-        plataformas.emplace_back(QPointF(x, y), ancho, alto, atravesable, sprite);
-    };
-
-    auto agregarManifestantes = [this, s](double x, double ancho = 160.0, double alto = 90.0)
-    {
-        manifestantes.emplace_back(QPointF(x, s - alto), ancho, alto, efecto::multitud, 1.0);
-    };
-
-    // Límites mapa
-    agregar(0, s, anchoMapa, 50, false, 7);          // suelo
-    agregar(0, 0, 40, s, false, 0);                  // pared izquierda
-    agregar(anchoMapa - 40, 0, 40, s, false, 0);     // pared derecha
-    agregar(0, -50, anchoMapa, 50, false, 0);        // techo
+    // Límites del mapa (ANCHO_NIVEL1 = 6800.0)
+    plataformas.emplace_back(QPointF(0.0, s),          anchoMapa, 60.0,     false, 7); // suelo
+    plataformas.emplace_back(QPointF(-30.0, 0.0),      30.0,      s + 60.0, false, 0); // pared izquierda
+    plataformas.emplace_back(QPointF(anchoMapa, 0.0),  30.0,      s + 60.0, false, 0); // pared derecha
 
     // parte 1
-    agregar(280,  s - 105, 250, 105, false, 2);      // bus verde (2.png)
-    agregarManifestantes(560, 160, 90);              // manifestantes 1 (8.png)
-    agregarManifestantes(730, 160, 90);              // manifestantes 2 (8.png)
-    agregar(910,  s - 200, 90,  200, false, 7);      // primer muro ladrillo (7.png)
-    agregarManifestantes(1030, 180, 90);             // manifestantes suelo 1
-    agregarManifestantes(1230, 180, 90);             // manifestantes suelo 2
-    agregarManifestantes(1430, 180, 90);             // manifestantes suelo 3
-    agregar(1060, s - 165, 140, 22,  true,  4);      // plataforma media izq (4.png)
-    agregar(1210, s - 285, 220, 22,  true,  5);      // plataforma alta con bufo (5.png)
-    agregar(1440, s - 165, 140, 22,  true,  4);      // plataforma media der (4.png)
-    agregar(1620, s - 235, 90,  235, false, 7);      // segundo muro ladrillo (7.png)
-    // parte 2
-    agregar(1840, s - 95,  190, 95,  false, 3);      // camión grafiti (3.png)
-    agregarManifestantes(2080, 160, 90);             // manifestantes 1
-    agregarManifestantes(2250, 160, 90);             // manifestantes 2
-    agregarManifestantes(2420, 160, 90);             // manifestantes 3
-    agregar(2430, s - 175, 140, 22,  true,  4);      // plataforma corta (4.png)
-    agregar(2640, s - 285, 95,  200, false, 7);      // muro colgante (túnel abajo)
-    agregarManifestantes(2780, 160, 90);             // manifestantes salida túnel
-    agregar(2790, s - 115, 220, 22,  true,  5);      // plataforma larga sobre multitud (5.png)
-    // parte 3 final
-    agregar(3180, s - 110, 360, 110, false, 6);      // TransMilenio rojo (6.png)
-    agregar(3460, s - 220, 150, 22,  true,  4);      // plataforma subida (4.png)
-    agregar(3640, s - 240, 90,  240, false, 7);      // muro alto (7.png)
-    agregarManifestantes(3780, 220, 90);             // multitud larga
-    agregar(4040, s - 95,  190, 95,  false, 1);      // camión refugio (1.png)
-    agregarManifestantes(4270, 220, 90);             // multitud larga
-    agregar(4280, s - 175, 220, 22,  true,  5);      // plataforma alta (5.png)
-    agregar(4680, s - 110, 360, 110, false, 6);      // TransMilenio rojo (6.png)
-    agregar(5100, s - 205, 140, 22,  true,  4);      // plataforma aérea (4.png)
-    agregarManifestantes(5280, 250, 90);             // última multitud
-    agregar(5580, s - 105, 250, 105, false, 2);      // bus verde (2.png)
-    agregar(5920, s - 180, 220, 22,  true,  5);      // plataforma final (5.png)
-    agregar(6220, s - 95,  190, 95,  false, 1);      // último camión (1.png)
-}
+    plataformas.emplace_back(QPointF(150.0, s - 95.0),  180.0, 95.0,  false, 1); // bloque gris inicial
+    plataformas.emplace_back(QPointF(230.0, s - 220.0), 140.0, 22.0,  true,  4); // plataforma azul 1
+    manifestantes.emplace_back(QPointF(330.0, s - 90.0), 320.0, 90.0, efecto::danio, 0.0);
+    plataformas.emplace_back(QPointF(430.0, s - 320.0), 190.0, 22.0,  true,  5); // plataforma media-alta
+    plataformas.emplace_back(QPointF(650.0, s - 230.0), 60.0,  230.0, false, 7); // 1er muro vertical
 
+    // parte 2
+    manifestantes.emplace_back(QPointF(710.0, s - 90.0), 640.0, 90.0, efecto::danio, 0.0);
+    plataformas.emplace_back(QPointF(740.0,  s - 150.0), 130.0, 22.0,  true,  4); // ruta baja 1
+    plataformas.emplace_back(QPointF(760.0,  s - 410.0), 140.0, 22.0,  true,  4); // ruta aérea alta
+    plataformas.emplace_back(QPointF(930.0,  s - 270.0), 200.0, 22.0,  true,  5); // central (1er bufo)
+    plataformas.emplace_back(QPointF(1080.0, s - 150.0), 130.0, 22.0,  true,  4); // ruta baja 2
+    plataformas.emplace_back(QPointF(1160.0, s - 360.0), 200.0, 22.0,  true,  5); // alta hacia 2do muro
+    plataformas.emplace_back(QPointF(1350.0, s - 230.0), 60.0,  230.0, false, 7); // 2do muro vertical
+
+    // parte 3
+    plataformas.emplace_back(QPointF(1500.0, s - 290.0), 190.0, 22.0,  true,  5);
+    plataformas.emplace_back(QPointF(1620.0, s - 110.0), 240.0, 110.0, false, 2); // bus verde
+    plataformas.emplace_back(QPointF(1800.0, s - 440.0), 150.0, 22.0,  true,  4); // techo alto
+    manifestantes.emplace_back(QPointF(1860.0, s - 90.0), 250.0, 90.0, efecto::danio, 0.0);
+    plataformas.emplace_back(QPointF(1920.0, s - 210.0), 130.0, 22.0,  true,  4); // escalón al muro torre
+
+    // parte 4
+    plataformas.emplace_back(QPointF(2110.0, s - 310.0), 75.0,  310.0, false, 7); // 3er muro torre
+    plataformas.emplace_back(QPointF(2180.0, s - 410.0), 210.0, 22.0,  true,  5); // pasarela alta
+    plataformas.emplace_back(QPointF(2260.0, s - 160.0), 140.0, 22.0,  true,  4);
+    manifestantes.emplace_back(QPointF(2280.0, s - 90.0), 240.0, 90.0, efecto::danio, 0.0);
+    plataformas.emplace_back(QPointF(2540.0, s - 105.0), 200.0, 105.0, false, 1); // vehículo gris
+    plataformas.emplace_back(QPointF(2640.0, s - 260.0), 160.0, 22.0,  true,  4); // salto medio
+    plataformas.emplace_back(QPointF(2820.0, s - 390.0), 190.0, 22.0,  true,  5); // plataforma alta
+
+    // parte 5
+    plataformas.emplace_back(QPointF(3030.0, s - 210.0), 55.0,  210.0, false, 7); // muro medio
+    manifestantes.emplace_back(QPointF(3085.0, s - 90.0), 340.0, 90.0, efecto::danio, 0.0);
+    plataformas.emplace_back(QPointF(3120.0, s - 310.0), 150.0, 22.0,  true,  4); // puente sobre manifestantes
+    plataformas.emplace_back(QPointF(3310.0, s - 450.0), 170.0, 22.0,  true,  5); // cima alta (2do bufo arriba)
+    plataformas.emplace_back(QPointF(3425.0, s - 115.0), 250.0, 115.0, false, 2); // bus verde 2
+    plataformas.emplace_back(QPointF(3690.0, s - 250.0), 140.0, 22.0,  true,  4); // salto salida convoy
+    plataformas.emplace_back(QPointF(3830.0, s - 340.0), 65.0,  340.0, false, 7); // 4to muro torre
+
+    // parte 6
+    plataformas.emplace_back(QPointF(3930.0, s - 170.0), 130.0, 22.0,  true,  4); // plataforma baja
+    plataformas.emplace_back(QPointF(3960.0, s - 460.0), 180.0, 22.0,  true,  5); // terraza muy alta
+    manifestantes.emplace_back(QPointF(4060.0, s - 90.0), 540.0, 90.0, efecto::danio, 0.0);
+    plataformas.emplace_back(QPointF(4140.0, s - 290.0), 170.0, 22.0,  true,  4); // isla central
+    plataformas.emplace_back(QPointF(4260.0, s - 430.0), 190.0, 22.0,  true,  5); // isla aérea alta
+    plataformas.emplace_back(QPointF(4390.0, s - 180.0), 150.0, 22.0,  true,  4); // escape bajo
+    plataformas.emplace_back(QPointF(4600.0, s - 100.0), 210.0, 100.0, false, 1); // bloque gris aterrizaje
+
+    // parte 7
+    plataformas.emplace_back(QPointF(4870.0, s - 230.0), 140.0, 22.0,  true,  4);
+    plataformas.emplace_back(QPointF(5030.0, s - 370.0), 160.0, 22.0,  true,  5);
+    manifestantes.emplace_back(QPointF(5050.0, s - 90.0), 420.0, 90.0, efecto::danio, 0.0);
+    plataformas.emplace_back(QPointF(5230.0, s - 470.0), 180.0, 22.0,  true,  4); // punto más alto del nivel (3er bufo)
+    plataformas.emplace_back(QPointF(5260.0, s - 190.0), 140.0, 22.0,  true,  4); // nivel medio alternativo
+    plataformas.emplace_back(QPointF(5470.0, s - 260.0), 60.0,  260.0, false, 7); // 5to muro vertical
+    plataformas.emplace_back(QPointF(5570.0, s - 115.0), 240.0, 115.0, false, 2); // bus verde 3
+
+    // parte 8
+    plataformas.emplace_back(QPointF(5840.0, s - 270.0), 150.0, 22.0,  true,  4); // subida 1
+    manifestantes.emplace_back(QPointF(5920.0, s - 90.0), 480.0, 90.0, efecto::danio, 0.0);
+    plataformas.emplace_back(QPointF(6040.0, s - 400.0), 190.0, 22.0,  true,  5); // cima final
+    plataformas.emplace_back(QPointF(6120.0, s - 170.0), 140.0, 22.0,  true,  4); // plataforma baja (4to bufo)
+    plataformas.emplace_back(QPointF(6300.0, s - 300.0), 160.0, 22.0,  true,  4); // último salto aéreo
+    plataformas.emplace_back(QPointF(6420.0, s - 220.0), 65.0,  220.0, false, 7); // último muro antes de meta
+    plataformas.emplace_back(QPointF(6520.0, s - 100.0), 180.0, 100.0, false, 1); // vehículo final de llegada
+}
 void nivel1::actualizar(double dt) {
     if (muroactivo) {
     muro.actualizar(dt);
@@ -186,11 +205,12 @@ void nivel1::construirProy()
 }
 void nivel1::construirBufos()
 {
-    const double s = Y_SUELO;
-    const double tam = 45.0;
     bufos.clear();
-    bufos.emplace_back(QPointF(1300.0, s - 285.0 - tam), tam, tam, efecto::bufo, 5.0);
-    bufos.emplace_back(QPointF(2665.0, s - tam), tam, tam, efecto::bufo, 5.0);
+    const double s = Y_SUELO;
+    bufos.emplace_back(QPointF(1015.0, s - 315.0), 30.0, 30.0, efecto::bufo, 5.0); // parte 2 en plataforma central
+    bufos.emplace_back(QPointF(3380.0, s - 495.0), 30.0, 30.0, efecto::bufo, 5.0); // parte 5 en cima alta sobre manifestantes
+    bufos.emplace_back(QPointF(5305.0, s - 515.0), 30.0, 30.0, efecto::bufo, 5.0); // parte 7 en cumbre máxima del nivel
+    bufos.emplace_back(QPointF(6175.0, s - 215.0), 30.0, 30.0, efecto::bufo, 5.0); // parte 8 en impulso final antes del cierre
 }
 bool nivel1::lanzarEn(vector<proyectil>& proy, const QPointF& pos,
                       const QPointF& vel, int rebotes)

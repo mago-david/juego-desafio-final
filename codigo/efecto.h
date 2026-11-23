@@ -6,7 +6,7 @@
 class efecto : public zona
 {
 public:
-    enum tipoefecto { gas, bufo, danio, explosion, chorro,multitud };
+    enum tipoefecto { gas, bufo, danio, senal };
 private:
     tipoefecto tipo;
     double duracion;      // gas/explosion/chorro: segundos de vida que faltan; velocidad: duración del bufo

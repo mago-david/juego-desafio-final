@@ -12,7 +12,7 @@ public:
     //acciones
     void reiniciar(const QPointF& pos, int vida_);
     void perseguir(const QPointF& objetivo);
-    void recibirGolpe();
+    void recibirGolpe(int d);
     bool estaVivo() const;
     //acceso
     int getVida() const;

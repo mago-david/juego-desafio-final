@@ -1,11 +1,12 @@
 #include "esbirro.h"
 #include <stdexcept>
 #include <cmath>
+#include <algorithm>
 using namespace std;
 
 namespace
 {
-const double VEL_ESBIRRO   = 60.0;
+const double VEL_ESBIRRO   = 90.0;
 const double MASA_ESBIRRO  = 1.0;
 const double RADIO_ESBIRRO = 16.0;
 }
@@ -32,10 +33,10 @@ void esbirro::perseguir(const QPointF& objetivo)
         velocidad=d*(VEL_ESBIRRO/n);
 }
 
-void esbirro::recibirGolpe()
+void esbirro::recibirGolpe(int d)
 {
-    if(vida>0)
-        --vida;
+    if(d>0)
+        vida=max(0,vida-d);
 }
 
 bool esbirro::estaVivo() const
