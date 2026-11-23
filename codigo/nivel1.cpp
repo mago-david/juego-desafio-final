@@ -207,10 +207,8 @@ void nivel1::construirBufos()
 {
     bufos.clear();
     const double s = Y_SUELO;
-    bufos.emplace_back(QPointF(1015.0, s - 315.0), 30.0, 30.0, efecto::bufo, 5.0); // parte 2 en plataforma central
     bufos.emplace_back(QPointF(3380.0, s - 495.0), 30.0, 30.0, efecto::bufo, 5.0); // parte 5 en cima alta sobre manifestantes
     bufos.emplace_back(QPointF(5305.0, s - 515.0), 30.0, 30.0, efecto::bufo, 5.0); // parte 7 en cumbre máxima del nivel
-    bufos.emplace_back(QPointF(6175.0, s - 215.0), 30.0, 30.0, efecto::bufo, 5.0); // parte 8 en impulso final antes del cierre
 }
 bool nivel1::lanzarEn(vector<proyectil>& proy, const QPointF& pos,
                       const QPointF& vel, int rebotes)
