@@ -7,6 +7,8 @@
 #include <QBrush>
 #include <QString>
 #include <QPixmap>
+#include<QSoundEffect>
+#include <QUrl>
 #include "proyectil.h"
 
 class QGraphicsScene;
@@ -15,7 +17,10 @@ class QGraphicsPixmapItem;
 class QPushButton;
 class QTimer;
 class QKeyEvent;
+class QSoundEffect;
+class QResizeEvent;
 class vistaNivel:public QGraphicsView
+
 {
     Q_OBJECT
 private:
@@ -36,10 +41,17 @@ private:
     void crearUI_Victoria();
     void mostrarPantallaVictoria();
     void posicionarBotonesFinales();
-
     void crearUI_Muerte();
     void mostrarPantallaMuerte();
     QPixmap recortarSprite(const QString& ruta, double altoDeseado);
+    //sonidos
+    QSoundEffect* sonidoGolpe1;
+    QSoundEffect* sonidoGolpe2;
+    QSoundEffect* sonidoMuerte;
+    QSoundEffect* sonidoBufo;
+    QSoundEffect* sonidoGameOver;
+    QSoundEffect* sonidoVictoria;
+    int turnoGolpe;
 
 private slots:
     void avanzar();
@@ -62,6 +74,8 @@ protected:
     void keyPressEvent(QKeyEvent* e) override;
     void keyReleaseEvent(QKeyEvent* e) override;
     void focusOutEvent(QFocusEvent* e) override;
+    //pantalla grande
+    void resizeEvent(QResizeEvent* e) override;
     //cositas proyectiles
     void crearDibujos(const std::vector<proyectil>& pool,
                       QVector<QGraphicsEllipseItem*>& items, const QColor& color);
@@ -81,6 +95,12 @@ protected:
     QVector<QPixmap> cargarFrames(const QString& carpeta, int desde, int hasta, double escala);
     void dibujarHUD(int vidasMax);
     void actualizarHUD(int vidas);
+    //sonidos
+    void reproducirDanio();
+    void reproducirMuerte();
+    void reproducirBufo();
+    void reproducirGameOver();
+    void reproducirVictoria();
 public:
     //"momentos"
     void iniciar();

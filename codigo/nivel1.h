@@ -29,6 +29,8 @@ private:
     void construirMapa();
     //muro perseguidor
     muroPerseguidor muro;
+    bool muroactivo;
+
     //ataques proyectil
     void construirProy();
     bool lanzarEn(std::vector<proyectil>& pool, const QPointF& pos,  const QPointF& vel, int rebotes);
@@ -71,7 +73,7 @@ public:
     const std::vector<efecto>& getManifestantes() const;
     const std::vector<efecto>& getNubes() const;
     void setNubes(const std::vector<efecto>& n);
-
+    void setMuroActivo(bool activo);
     void setDireccionPersonaje(int d);
     bool saltar();
     bool bajarPlataforma();

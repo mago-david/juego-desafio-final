@@ -9,6 +9,7 @@
 #include <QTransform> // transformaciones; scale(-1, 1) voltea el sprite al mirar a la izquierda
 #include <QBrush>
 #include <QPen> // borde de las figuras (Qt::NoPen = sin borde)
+#include <QPainter>
 #include <QDebug>
 #include <cmath>
 using namespace std;
@@ -16,15 +17,17 @@ vistaN1::vistaN1(QWidget* parent)
     : vistaNivel(parent),
     nivel(),dibujoPersonaje(nullptr),dibujoSprite(nullptr),
     efectoDanio(nullptr),teclaA(false),teclaD(false),
-    estadoAnim(QUIETO),tAnim(0.0),mirandoIzq(false)
+    estadoAnim(QUIETO),tAnim(0.0),mirandoIzq(false),muroIniciado(false),dibujoMuro(nullptr)
 {
     escena->setSceneRect(0.0, 0.0, nivel.getAnchoMapa(), datos::ALTO_ESCENA);
     cargarSprites();
     dibujarFondo();
     dibujarMapa();
     dibujarPersonaje();
-    //
     dibujarHUD(nivel.getPersonaje().getVidasMax());
+    dibujoMuro = escena->addRect(0.0, 0.0, 1.0, datos::ALTO_ESCENA,
+                                 QPen(Qt::NoPen), QBrush(Qt::black));
+    dibujoMuro->setZValue(15);
     //proyectiles
     //  voltear disparo hacia la izquierda
     QPixmap spriteBala = prepararFrame(":/capitan/danio/1.png", 1.0);
@@ -101,30 +104,23 @@ void vistaN1::dibujarMapa()
         const int id = o.getSpriteId();
         if (id <= 0 || id > 8 || tex[id].isNull())
             continue; // paredes invisibles
-        if (id == 7 && o.getAncho() > o.getAlto() * 2) {
-            // Suelo largo
-            const int paso = 120;
-            QPixmap tile = tex[7].scaled(paso, int(o.getAlto()), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
-            for (double x = o.getIzquierda(); x < o.getDerecha(); x += paso) {
-                auto* item = escena->addPixmap(tile);
-                item->setPos(x, o.getArriba());
-                item->setZValue(5);
-            }
-        } else {
-            // Vehículos , plataformas aéreas  y  muros verticales
-            QPixmap esc = tex[id].scaled(int(o.getAncho()), int(o.getAlto()),
-                                         Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
-            auto* item = escena->addPixmap(esc);
-            item->setPos(o.getIzquierda(), o.getArriba());
-            item->setZValue(o.getAtravesable() ? 6 : 8);
-        }
+        if (id == 7 && o.getAncho() > o.getAlto() * 2)
+            continue; // suelo invisible para que solo se vea el fondo
+
+        // Vehículos, plataformas aéreas y muros verticales
+        QPixmap esc = tex[id].scaled(int(o.getAncho()), int(o.getAlto()),
+                                     Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+        QGraphicsPixmapItem* item = escena->addPixmap(esc);
+        item->setPos(o.getIzquierda(), o.getArriba());
+        item->setZValue(o.getAtravesable() ? 6 : 8);
     }
+
     // Dibujar zonas de manifestantes
     if (!tex[8].isNull()) {
         for (const efecto& m : nivel.getManifestantes()) {
             QPixmap esc = tex[8].scaled(int(m.getAncho()), int(m.getAlto()),
                                         Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
-            auto* item = escena->addPixmap(esc);
+            QGraphicsPixmapItem* item = escena->addPixmap(esc);
             item->setPos(m.getIzquierda(), m.getArriba());
             item->setZValue(9);
         }
@@ -161,6 +157,12 @@ void vistaN1::cargarSprites()
     animaciones[CORRER]  = cargarFrames("correr",  14, 18, escala);
     animaciones[SALTO]   = cargarFrames("salto",   19, 21, escala);
 
+    for (int e = 0; e < N_ESTADOS; ++e) {
+        animacionesIzq[e].reserve(animaciones[e].size());
+        for (const QPixmap& f : animaciones[e])
+            animacionesIzq[e].append(f.transformed(QTransform().scale(-1, 1)));
+    }
+
     qDebug() << "frames quieto:" << animaciones[QUIETO].size();   // debe decir 5
 }
 
@@ -192,7 +194,7 @@ void vistaN1::actualizarSprite()
         tAnim = 0.0;
     }
     tAnim += datos::DT;
-    const QVector<QPixmap>& frames = animaciones[estadoAnim];
+    const QVector<QPixmap>& frames = mirandoIzq ? animacionesIzq[estadoAnim] : animaciones[estadoAnim];
     if (frames.isEmpty() || !dibujoSprite)
         return;
     //Escoger el frame: el salto usa la velocidad vertical, el resto avanza con el tiempo
@@ -205,9 +207,7 @@ void vistaN1::actualizarSprite()
         idx = int(tAnim * 10.0) % frames.size();
     }
     //Voltear la imagen si mira a la izquierda
-    QPixmap p = frames[idx];
-    if (mirandoIzq)
-        p = p.transformed(QTransform().scale(-1, 1));
+   const QPixmap& p = frames[idx];
     //Centrar en x y apoyar los pies en la base del circulo
     dibujoSprite->setPixmap(p);
     dibujoSprite->setPos(-p.width() / 2.0, c.getRadio() - p.height());
@@ -224,10 +224,18 @@ void vistaN1::actualizarSprite()
 
 void vistaN1::avanzarLogica(double dt)
 {
+    const int vidasAntes = nivel.getPersonaje().getVidas();
     nivel.actualizar(dt);
+    const int vidasAhora = nivel.getPersonaje().getVidas();
+
     if (!nivel.getPersonaje().estaVivo()) {
-       actualizarHUD(nivel.getPersonaje().getVidas());
+        actualizarHUD(vidasAhora);
+        reproducirMuerte();
         terminar(false);
+        return;
+    }
+    if (vidasAhora < vidasAntes) {
+        reproducirDanio();
     }
     if (nivel.getPersonaje().getPosicion().x() >= nivel.getAnchoMapa() - 150.0) {
         terminar(true);
@@ -241,11 +249,15 @@ void vistaN1::dibujar(double a)
     const capitanN1& c = nivel.getPersonaje();
     const QPointF pos = c.getPosicionAnterior() + (c.getPosicion() - c.getPosicionAnterior()) * a;
 
-    // La camara avanza automaticamente con el borde derecho del muro perseguidor
+    // la camara sigue al jugador sin importar que el muro avance
     const double maxCamIzq = nivel.getAnchoMapa() - datos::ANCHO_ESCENA;
-    const double camIzq = std::min(nivel.getMuro().getDerecha(), maxCamIzq);
+    double camIzq = pos.x() - datos::ANCHO_ESCENA / 2.0;
+    if (camIzq < 0.0) {
+        camIzq = 0.0;
+    } else if (camIzq > maxCamIzq) {
+        camIzq = maxCamIzq;
+    }
     const double centroCamX = camIzq + datos::ANCHO_ESCENA / 2.0;
-
     dibujoPersonaje->setPos(pos);
     actualizarSprite();
     actualizarFondo(QPointF(centroCamX, pos.y()));
@@ -253,8 +265,19 @@ void vistaN1::dibujar(double a)
     dibujarPool(nivel.getLacrimogenas(), dibujoLacrimogenas, true);
     actualizarNubes();
     actualizarBufos();
+    const double derMuro = nivel.getMuro().getDerecha();
+    const double izqMuro = camIzq; // borde izquierdo actual de la cámara
+    if (dibujoMuro) {
+        if (derMuro > izqMuro) {
+            dibujoMuro->setVisible(true);
+            dibujoMuro->setRect(0.0, 0.0, derMuro - izqMuro, datos::ALTO_ESCENA);
+            dibujoMuro->setPos(izqMuro, 0.0);
+        } else {
+            dibujoMuro->setVisible(false);
+        }
     centerOn(centroCamX, datos::ALTO_ESCENA / 2.0);
-   actualizarHUD(nivel.getPersonaje().getVidas());
+    actualizarHUD(nivel.getPersonaje().getVidas());
+}
 }
 void vistaN1::actualizarDireccion()
 {nivel.setDireccionPersonaje((teclaD ? 1 : 0) - (teclaA ? 1 : 0));}
@@ -269,6 +292,10 @@ void vistaN1::alPulsar(int tecla)
     case Qt::Key_D:
         teclaD = true;
         actualizarDireccion();
+        if (!muroIniciado) {
+            muroIniciado = true;
+            nivel.setMuroActivo(true);
+        }
         break;
     case Qt::Key_Space:
         nivel.saltar();
@@ -296,6 +323,7 @@ void vistaN1::alPerderFoco() {
     teclaD = false;
     actualizarDireccion();
 }
+
 
 const nivel1& vistaN1::getNivel() const
 { return nivel; }
@@ -342,19 +370,15 @@ void vistaN1::actualizarNubes()
 }
 void vistaN1::crearBufos()
 {
-    QPixmap spriteBufo = prepararFrame(":/capitan/vida/4.png", 1.0);
-    if (!spriteBufo.isNull())
-        spriteBufo = spriteBufo.scaledToHeight(32, Qt::SmoothTransformation);
-
     const std::vector<efecto>& bufos = nivel.getBufos();
     dibujoBufos.reserve(int(bufos.size()));
     for (const efecto& b : bufos)
     {
-        QGraphicsPixmapItem* it = escena->addPixmap(spriteBufo);
+        QGraphicsPixmapItem* it = escena->addPixmap(corazonExtra);
         it->setZValue(4);
         double cx = b.getIzquierda() + b.getAncho() / 2.0;
         double cy = b.getArriba() + b.getAlto() / 2.0;
-        it->setPos(cx - spriteBufo.width() / 2.0, cy - spriteBufo.height() / 2.0);
+        it->setPos(cx - corazonExtra.width() / 2.0, cy - corazonExtra.height() / 2.0);
         it->setVisible(b.getactivo());
         dibujoBufos.append(it);
     }
@@ -364,6 +388,7 @@ void vistaN1::actualizarBufos()
     const std::vector<efecto>& bufos = nivel.getBufos();
     for (int i = 0; i < int(bufos.size()); ++i) {
         if (dibujoBufos[i] && !bufos[i].getactivo()) {
+            reproducirBufo();
             escena->removeItem(dibujoBufos[i]);
             delete dibujoBufos[i];
             dibujoBufos[i] = nullptr;

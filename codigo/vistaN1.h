@@ -20,6 +20,7 @@ private:
     bool teclaA;
     bool teclaD;
     QVector<QPixmap> animaciones[N_ESTADOS];//estado del personaje para animar
+    QVector<QPixmap> animacionesIzq[N_ESTADOS];
     Estado estadoAnim;
     double tAnim;
     bool mirandoIzq;
@@ -44,12 +45,16 @@ private:
     QVector<QGraphicsPixmapItem*> dibujoBufos;
     void crearBufos();
     void actualizarBufos();
+    //muro
+    bool muroIniciado;
+    QGraphicsRectItem* dibujoMuro;
 protected:
     void avanzarLogica(double dt) override;
     void dibujar(double alfa) override;
     void alPulsar(int tecla) override;
     void alSoltar(int tecla) override;
     void alPerderFoco() override;
+
 public:
     explicit vistaN1(QWidget* parent = nullptr);
     const nivel1& getNivel() const;

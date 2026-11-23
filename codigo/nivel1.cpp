@@ -38,7 +38,8 @@ const double DURACION_NUBE = 3.0;
 nivel1::nivel1()
     : personaje(QPointF(100.0, 0.0)),
     primeraAltura(0), disparosRestantes(0), tReloj(ESPERA_ATAQUE),
-    anchoMapa(ANCHO_NIVEL1), muro(QPointF(0.0, 0.0), 40.0, Y_SUELO, VEL_MURO)
+    anchoMapa(ANCHO_NIVEL1), muro(QPointF(0.0, 0.0), 40.0, Y_SUELO, VEL_MURO),
+    muroactivo(false)
 {
     construirMapa();
     construirProy();
@@ -111,7 +112,9 @@ void nivel1::construirMapa()
 }
 
 void nivel1::actualizar(double dt) {
+    if (muroactivo) {
     muro.actualizar(dt);
+    }
     if (muro.aplicar(personaje))
         return; // tocó el borde izquierdo, muere al instante
 
@@ -464,4 +467,8 @@ bool nivel1::operator==(const nivel1& o) const
            && nubes == o.nubes
            && bufos == o.bufos
            && muro == o.muro;
+}
+void nivel1::setMuroActivo(bool activo)
+{
+    muroactivo = activo;
 }
