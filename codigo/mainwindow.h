@@ -13,6 +13,15 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 private:
     vistaNivel* vista;
+    int nivelActual;
+
+    void cargarNivel(int numeroNivel);
+
+private slots:
+    void reiniciarNivel();
+    void abrirMenu();
+    void siguienteNivel();
+
 public:
     explicit MainWindow(QWidget* parent = nullptr);
 };

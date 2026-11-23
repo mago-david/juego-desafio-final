@@ -5,13 +5,17 @@
 #include <cmath>
 using namespace std;
 obstaculo::obstaculo(const QPointF& esquina_, double ancho_, double alto_,
-                     bool atravesable_):zona(esquina_, ancho_, alto_),atravesable(atravesable_)
+                     bool atravesable_, int spriteId_)
+    : zona(esquina_, ancho_, alto_),
+    atravesable(atravesable_),
+    spriteId(spriteId_)
 {
     setAncho(ancho_);
     setAlto(alto_);
 }
+
 obstaculo::obstaculo(const QPointF& esquina_, double lado)
-    :obstaculo(esquina_, lado, lado,false){}
+    : obstaculo(esquina_, lado, lado, false, 0) {}
 
 //acceso
 bool obstaculo::getAtravesable()const
@@ -19,6 +23,12 @@ bool obstaculo::getAtravesable()const
 
 void obstaculo::setAtravesable(bool a)
 {atravesable = a;}
+
+int obstaculo::getSpriteId() const
+{ return spriteId; }
+
+void obstaculo::setSpriteId(int id)
+{ spriteId = id; }
 
 //operadores
 obstaculo& obstaculo::operator=(const obstaculo& o)
@@ -37,14 +47,18 @@ bool obstaculo::operator==(const obstaculo& o) const
 //colisiones
 bool obstaculo::tocado(const objetoCircular& e)const
 {
-    const QPointF& c = e.getPosicion();
-    double qx = max(getIzquierda(),min(c.x(), getDerecha()));
-    double qy = max(getArriba(),min(c.y(), getAbajo()));
-    double dx = c.x() - qx;
-    double dy = c.y() - qy;
-    double r  = e.getRadio();
+    return tocaCirculo(e.getPosicion(), e.getRadio());
+}
+
+bool obstaculo::tocaCirculo(const QPointF& c, double r) const
+{
+    const double qx = max(getIzquierda(), min(c.x(), getDerecha()));
+    const double qy = max(getArriba(),    min(c.y(), getAbajo()));
+    const double dx = c.x() - qx;
+    const double dy = c.y() - qy;
     return dx * dx + dy * dy <= r * r;
 }
+
 bool obstaculo::colisionar(objetoCircular& e,double coefRestitucion) const
 {
     if (coefRestitucion < 0.0 || coefRestitucion > 1.0)

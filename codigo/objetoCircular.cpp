@@ -59,6 +59,15 @@ void objetoCircular::setRadio(double r) {
     radio = r;
 }
 
+//colisiones
+
+bool objetoCircular::circuloVScirculo(const objetoCircular& o)const
+{
+    const QPointF d = posicion - o.posicion;
+    const double r = radio + o.radio;
+    return d.x() * d.x() + d.y() * d.y() <= r * r;
+}
+
 // operadores
 objetoCircular& objetoCircular::operator=(const objetoCircular& o) {
     if (this != &o) {
