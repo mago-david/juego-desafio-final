@@ -11,10 +11,12 @@ private:
     double T_veloz;
     bool enNube;
 public:
+    capitan();
     capitan(const QPointF& pos, const QPointF& vel, double masa_, double radio_,
             bool usaGravedad_ = true, int vidas_ = datos::VIDAS_INICIALES,
             int vidasMax_ = datos::VIDAS_INICIALES);
     capitan(const capitan& o) = default;
+    ~capitan();
     //movimiento
     void actualizar(double dt) override;
     //acceso

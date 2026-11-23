@@ -59,14 +59,16 @@ namespace
     const int    VIDA_ESBIRRO    = 30;
     const double INTERVALO_CURA  = 0.3;
 }
+jefe::jefe() : jefe(1, false)
+{}
 
-    jefe::jefe(int vidaMax_, bool faseEsbirros_)
-        : vida(vidaMax_), vidaMax(vidaMax_),
-        faseActual(fase::recarga), T_fase(T_RECARGA),
-        ataqueActual(ataque::chorros), modoAtaque(modo::horizontal),
-        balasLanzadas(0), objetivo(CENTRO), bombas{},
-        T_esquina(ESPERA_ESQUINA), esquinaActual(cuadrante::noroeste),
-        faseEsbirros(faseEsbirros_), curaRestante(0), esbirrosLanzados(0)
+jefe::jefe(int vidaMax_, bool faseEsbirros_)
+    : vida(vidaMax_), vidaMax(vidaMax_),
+    faseActual(fase::recarga), T_fase(T_RECARGA),
+    ataqueActual(ataque::chorros), modoAtaque(modo::horizontal),
+    balasLanzadas(0), objetivo(CENTRO), bombas{},
+    T_esquina(ESPERA_ESQUINA), esquinaActual(cuadrante::noroeste),
+    faseEsbirros(faseEsbirros_), curaRestante(0), esbirrosLanzados(0)
 {
     if (vidaMax_ <= 0)
         throw invalid_argument("La vida maxima del jefe debe ser mayor que cero");
@@ -82,6 +84,9 @@ jefe::cuadrante jefe::percibir(const QPointF& poscapi)const
     return este ? cuadrante::noreste : cuadrante::noroeste;
 }
 
+jefe::~jefe() {}
+
+//acciones
 void jefe::razonar()
 {
     const ataque anterior = ataqueActual;
@@ -120,7 +125,7 @@ void jefe::actuar(std::vector<efecto>& efectos, std::vector<proyectil>& balas)
     }
 }
 
-bool jefe::actualizar(double dt, const QPointF& posJugador, std::vector<efecto>& efectos,
+void jefe::actualizar(double dt, const QPointF& posJugador, std::vector<efecto>& efectos,
                       std::vector<proyectil>& balas,vector<esbirro>& esbirros)
 {
     atacarDesdeEsquina(dt, posJugador, balas);
@@ -128,12 +133,12 @@ bool jefe::actualizar(double dt, const QPointF& posJugador, std::vector<efecto>&
     if(curaRestante>0)
     {
         curar(dt,esbirros);
-        return false;
+        return;
     }
     if(faseEsbirros && esbirrosLanzados==0 && vida<=vidaMax/2)
     {
         iniciarCura(esbirros);
-        return false;
+        return;
     }
 
     T_fase -= dt;
@@ -162,7 +167,7 @@ bool jefe::actualizar(double dt, const QPointF& posJugador, std::vector<efecto>&
     // chorros actuan solo al cambiar de fase; las balas salen escalonadas en cada frame
     if (cambio || ataqueActual == ataque::balas)
         actuar(efectos, balas);
-    return cambio;                    // hubo cambio de fase
+    return;                    // hubo cambio de fase
 }
 
 void jefe::construirChorros(std::vector<efecto>& reserva, double x0, double y0,
@@ -585,7 +590,7 @@ bool jefe::operator==(const jefe& o) const
            && esquinaActual == o.esquinaActual
            && faseEsbirros == o.faseEsbirros
            && curaRestante == o.curaRestante
-           && esbirrosLanzados == o.esbirrosLanzados;;
+           && esbirrosLanzados == o.esbirrosLanzados;
 }
 
 

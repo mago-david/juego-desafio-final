@@ -3,12 +3,17 @@
 #include <stdexcept>
 #include <cmath>
 using namespace std;
+zona::zona() : zona(QPointF(0,0), 1.0, 1.0)
+{}
+
 zona::zona(const QPointF& esquina_, double ancho_, double alto_)
     : esquina(esquina_), ancho(1.0), alto(1.0)
 {
     setAncho(ancho_);
     setAlto(alto_);
 }
+
+zona::~zona() {}
 
 //acceso
 const QPointF& zona::getEsquina() const

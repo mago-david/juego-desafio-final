@@ -52,15 +52,17 @@ private:
     void terminarCura();
     void lanzarEsbirro(esbirro& s, int i);
 public:
+    jefe();
     explicit jefe(int vidaMax_, bool faseEsbirros_ = false);
     jefe(const jefe& o) = default;
+    ~jefe();
 
     //con el jugador
     cuadrante percibir(const QPointF& posCapi)const;
     void razonar(); //elije el ataque,modo y zona
     void actuar(std::vector<efecto>& efectos, std::vector<proyectil>& ba);
     //ciclo de recarga->aviso->atque
-    bool actualizar(double dt, const QPointF& posJugador, std::vector<efecto>& efectos,
+    void actualizar(double dt, const QPointF& posJugador, std::vector<efecto>& efectos,
                     std::vector<proyectil>& balas,std::vector<esbirro>& esbirros);
     bool estaVivo() const;
     bool recibirDanio(int d);

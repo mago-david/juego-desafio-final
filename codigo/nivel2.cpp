@@ -1,7 +1,6 @@
 #include "nivel2.h"
 #include "datos.h"
 #include <stdexcept>
-#include <QDebug>
 
 namespace
 {
@@ -15,13 +14,18 @@ const int    N_ESBIRROS = 4;       // tanda viva a la vez
 const bool   DIFICIL    = true;
 }
 
-nivel2::nivel2()
-    : personaje(QPointF(datos::CENTRO_X, datos::CENTRO_Y + DY_INICIO)),
-    jefeFinal(VIDA_JEFE, DIFICIL), efectos(N_EFECTOS), balas(), esbirros(N_ESBIRROS)
+nivel2::nivel2(bool dificil, bool fortachon)
+    : personaje(QPointF(datos::CENTRO_X, datos::CENTRO_Y + DY_INICIO), datos::VIDAS_INICIALES, fortachon),
+    jefeFinal(VIDA_JEFE, dificil), efectos(N_EFECTOS), balas(), esbirros(N_ESBIRROS)
 {
     construirArena();
     construirBalas();
 }
+
+nivel2::nivel2() : nivel2(DIFICIL, false)
+{}
+
+nivel2::~nivel2() {}
 
 void nivel2::construirArena()
 {
@@ -184,6 +188,7 @@ nivel2& nivel2::operator=(const nivel2& o)
         jefeFinal = o.jefeFinal;
         efectos   = o.efectos;
         balas     = o.balas;
+        esbirros=o.esbirros;
     }
     return *this;
 }
@@ -194,7 +199,8 @@ bool nivel2::operator==(const nivel2& o) const
            && personaje == o.personaje
            && jefeFinal == o.jefeFinal
            && efectos == o.efectos
-           && balas == o.balas;
+           && balas == o.balas
+        &&esbirros==o.esbirros;
 }
 
 

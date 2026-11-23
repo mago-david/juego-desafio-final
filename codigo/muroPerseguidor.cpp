@@ -3,10 +3,10 @@
 #include <stdexcept>
 #include <cmath>
 muroPerseguidor::muroPerseguidor()
-    : zona(QPointF(0.0, 0.0), 1.0, 1.0), velocidad(60.0), activo(true) {}
+    : zona(QPointF(0.0, 0.0), 1.0, 1.0), velocidad(60.0), activo(false) {}
 muroPerseguidor::muroPerseguidor(const QPointF& esquina_, double ancho_, double alto_,
                                  double velocidad_)
-    : zona(esquina_, ancho_, alto_), velocidad(0.0), activo(true)
+    : zona(esquina_, ancho_, alto_), velocidad(0.0), activo(false)
 {
     setvelocidad(velocidad_);
 }

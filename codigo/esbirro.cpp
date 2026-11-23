@@ -11,16 +11,20 @@ const double MASA_ESBIRRO  = 1.0;
 const double RADIO_ESBIRRO = 16.0;
 }
 
-esbirro::esbirro()
-    : objetoCircular(QPointF(0.0, 0.0), QPointF(0.0, 0.0), MASA_ESBIRRO, RADIO_ESBIRRO, false),
-    vida(0)
-{}
+esbirro::esbirro() : esbirro(QPointF(0.0, 0.0), 0) {}
 
-void esbirro::reiniciar(const QPointF& pos,int vida)
+esbirro::esbirro(const QPointF& pos, int vida_)
+    : objetoCircular(pos, QPointF(0.0, 0.0), MASA_ESBIRRO, RADIO_ESBIRRO, false), vida(0)
+{ setVida(vida_); }
+
+esbirro::~esbirro()
+{}
+//aciones
+void esbirro::reiniciar(const QPointF& pos,int vida_)
 {
     setPosicion(pos);
     setVelocidad(QPointF(0.0,0.0));
-    setVida(vida);
+    setVida(vida_);
 }
 
 void esbirro::perseguir(const QPointF& objetivo)

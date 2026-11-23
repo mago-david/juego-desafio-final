@@ -29,7 +29,6 @@ private:
     void construirMapa();
     //muro perseguidor
     muroPerseguidor muro;
-    bool muroactivo;
 
     //ataques proyectil
     void construirProy();
@@ -43,7 +42,9 @@ private:
     void lanzarNube(const QPointF& centro);
 public:
     nivel1();
+    nivel1(int vidas_);
     nivel1(const nivel1& o)=default;
+    ~nivel1();
     //mueve personaje y coliciones
     void actualizar(double dt);
 
@@ -54,25 +55,29 @@ public:
     //acceso
     const std::vector<obstaculo>& getPlataformas() const;
     const capitanN1& getPersonaje() const;
-    double getAnchoMapa() const;
-    void setPlataformas(const std::vector<obstaculo>& p);
-    void setPersonaje(const capitanN1& p);
-    void setAnchoMapa(double a);
-    const muroPerseguidor& getMuro() const;
+    const std::vector<efecto>& getManifestantes() const;
+    const std::vector<efecto>& getBufos() const;
     const std::vector<proyectil>& getBalas() const;
     const std::vector<proyectil>& getLacrimogenas() const;
+    const std::vector<efecto>& getNubes() const;
     int getPrimeraAltura() const;
     int getDisparosRestantes() const;
     double getTReloj() const;
+    double getAnchoMapa() const;
+    const muroPerseguidor& getMuro() const;
+    void setPlataformas(const std::vector<obstaculo>& p);
+    void setPersonaje(const capitanN1& p);
+    void setManifestantes(const std::vector<efecto>& m);
+    void setBufos(const std::vector<efecto>& b);
     void setBalas(const std::vector<proyectil>& b);
-    void setLacrimogenas(const std::vector<proyectil>& p);
+    void setLacrimogenas(const std::vector<proyectil>& l);
+    void setNubes(const std::vector<efecto>& n);
     void setPrimeraAltura(int i);
     void setDisparosRestantes(int n);
     void setTReloj(double t);
-    const std::vector<efecto>& getBufos() const;
-    const std::vector<efecto>& getManifestantes() const;
-    const std::vector<efecto>& getNubes() const;
-    void setNubes(const std::vector<efecto>& n);
+    void setAnchoMapa(double a);
+    void setMuro(const muroPerseguidor& m);
+    //atajos
     void setMuroActivo(bool activo);
     void setDireccionPersonaje(int d);
     bool saltar();

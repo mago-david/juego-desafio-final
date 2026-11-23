@@ -16,6 +16,7 @@ public:
     explicit capitanN1(const QPointF& pos, int vidas_ = datos::VIDAS_INICIALES);
     capitanN1(const capitanN1& o) = default;
     capitanN1();
+    ~capitanN1();
     //aceleracion,tiempo de traspasar
     void actualizar(double dt) override;
 

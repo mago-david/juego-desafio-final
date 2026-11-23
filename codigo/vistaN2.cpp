@@ -7,6 +7,10 @@
 #include <QMouseEvent>
 #include <QBrush>
 #include <QPen>
+#include "efecto.h"
+#include "esbirro.h"
+#include "jefe.h"
+#include "proyectil.h"
 
 namespace
 {

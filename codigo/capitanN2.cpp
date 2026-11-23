@@ -14,6 +14,8 @@ const double RETARDO_ESCUDO = 0.7;
 const int DANIO_ESCUDO    = 10;
 const int DANIO_FORTACHON = 15;
 }
+capitanN2::capitanN2() : capitanN2(QPointF(0.0, 0.0))
+{}
 
 capitanN2::capitanN2(const QPointF& pos, int vidas_,bool forta_)
     : capitan(pos, QPointF(0.0, 0.0), 1.0, 20.0,
@@ -51,7 +53,7 @@ void capitanN2::actualizar(double dt)
             e.actualizar(dt);
     }
 }
-
+capitanN2::~capitanN2() {}
 //accion
 bool capitanN2:: lanzarEscudo(const QPointF& objetivo)
 {

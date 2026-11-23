@@ -13,10 +13,12 @@ private:
     std::vector<proyectil> escudos;
     bool fortachon;
 public:
+    capitanN2();
     explicit capitanN2(const QPointF& pos, int vidas_ = datos::VIDAS_INICIALES,bool fortachon=false);
     capitanN2(const capitanN2& o) = default;
+    ~capitanN2();
     //movimiento,recarga y movimiento de los escudos
-    void actualizar(double dt);
+    void actualizar(double dt)override;
 
     //ataque
     bool lanzarEscudo(const QPointF& objetivo);

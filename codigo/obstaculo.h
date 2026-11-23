@@ -10,9 +10,10 @@ private:
     bool atravesable;
     int spriteId;
 public:
+    obstaculo();
     obstaculo(const QPointF& pos, double ancho, double alto, bool atravesable = false, int spriteId = 0);
-    obstaculo(const QPointF& esquina_, double lado);
     obstaculo(const obstaculo& o) = default;
+    ~obstaculo();
 
     //acceso
     bool getAtravesable()const;

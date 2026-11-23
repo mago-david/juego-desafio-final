@@ -8,7 +8,9 @@ private:
     int vida;
 public:
     esbirro();
+    esbirro(const QPointF& pos, int vida_);
     esbirro(const esbirro& o) = default;
+    ~esbirro();
     //acciones
     void reiniciar(const QPointF& pos, int vida_);
     void perseguir(const QPointF& objetivo);

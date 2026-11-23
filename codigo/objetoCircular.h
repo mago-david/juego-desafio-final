@@ -12,6 +12,7 @@ private:
     double radio;
     bool gravedad;
 public:
+    objetoCircular();
     objetoCircular(const QPointF& pos, const QPointF& vel, double masa_, double radio_,
                    bool usaGravedad_ = true);
     objetoCircular(const objetoCircular& o) = default;
