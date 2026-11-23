@@ -1,12 +1,10 @@
 #include "mainwindow.h"
 #include "vistaN1.h"
 #include "vistaN2.h"
-#include "datos.h"
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent), vista(nullptr), nivelActual(1)
 {
-    setFixedSize(datos::ANCHO_ESCENA, datos::ALTO_ESCENA);
     cargarNivel(1);
 }
 void MainWindow::cargarNivel(int numeroNivel)

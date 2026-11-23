@@ -7,7 +7,11 @@
 #include <QImage>
 #include <QKeyEvent>
 #include <QTimer>
+#include <QSoundEffect>
+#include <QUrl>
 #include <algorithm>
+#include <QResizeEvent>
+#include <QPainter>
 
 vistaNivel::vistaNivel(QWidget* parent)
     : QGraphicsView(parent),
@@ -20,6 +24,13 @@ vistaNivel::vistaNivel(QWidget* parent)
     spriteMoriste(nullptr),
     btnReintentar(nullptr),
     btnMenu(nullptr),
+    sonidoGolpe1(nullptr),
+    sonidoGolpe2(nullptr),
+    sonidoMuerte(nullptr),
+    sonidoBufo(nullptr),
+    sonidoGameOver(nullptr),
+    sonidoVictoria(nullptr),
+    turnoGolpe(0),
     escena(new QGraphicsScene(this))
 {
     setScene(escena);
@@ -32,6 +43,12 @@ vistaNivel::vistaNivel(QWidget* parent)
     setFrameShape(QFrame::NoFrame);
     //centramos en caso de pantalla mas grande
     setAlignment(Qt::AlignLeft | Qt::AlignTop);
+    //pantalla grande
+    setRenderHint(QPainter::SmoothPixmapTransform);
+    QPalette paleta = palette();
+    paleta.setColor(QPalette::Window, Qt::black);
+    setPalette(paleta);
+    setAutoFillBackground(true);
     //el focus para los controles
     setFocusPolicy(Qt::StrongFocus);
     //precise para evitar tirones
@@ -40,6 +57,25 @@ vistaNivel::vistaNivel(QWidget* parent)
     //el tiempo incia en cada nivel osea cada vista
     crearUI_Muerte();
     connect(relojMuerte, &QTimer::timeout, this, &vistaNivel::actualizarFundidoMuerte);
+    const qreal volumenEfectos = 0.8;
+    sonidoGolpe1 = new QSoundEffect(this);
+    sonidoGolpe1->setSource(QUrl(QStringLiteral("qrc:/capitan/sonidos_danio/1.wav")));
+    sonidoGolpe1->setVolume(volumenEfectos);
+    sonidoGolpe2 = new QSoundEffect(this);
+    sonidoGolpe2->setSource(QUrl(QStringLiteral("qrc:/capitan/sonidos_danio/2.wav")));
+    sonidoGolpe2->setVolume(volumenEfectos);
+    sonidoMuerte = new QSoundEffect(this);
+    sonidoMuerte->setSource(QUrl(QStringLiteral("qrc:/capitan/sonidos_danio/3.wav")));
+    sonidoMuerte->setVolume(volumenEfectos);
+    sonidoBufo = new QSoundEffect(this);
+    sonidoBufo->setSource(QUrl(QStringLiteral("qrc:/capitan/bufo/bufo.wav")));
+    sonidoBufo->setVolume(volumenEfectos);
+    sonidoGameOver = new QSoundEffect(this);
+    sonidoGameOver->setSource(QUrl(QStringLiteral("qrc:/sonidos/gameover.wav")));
+    sonidoGameOver->setVolume(volumenEfectos);
+    sonidoVictoria = new QSoundEffect(this);
+    sonidoVictoria->setSource(QUrl(QStringLiteral("qrc:/sonidos/victoria.wav")));
+    sonidoVictoria->setVolume(volumenEfectos);
 }
 
 //"momentos"
@@ -129,6 +165,19 @@ void vistaNivel::keyReleaseEvent(QKeyEvent* e) {
 void vistaNivel::focusOutEvent(QFocusEvent* e) {
     alPerderFoco();
     QGraphicsView::focusOutEvent(e);
+}
+
+void vistaNivel::resizeEvent(QResizeEvent* e)
+{
+    QGraphicsView::resizeEvent(e);
+    //la vista siempre muestra ANCHO_ESCENA x ALTO_ESCENA, escalada y centrada
+    const double s = std::min(width() / datos::ANCHO_ESCENA, height() / datos::ALTO_ESCENA);
+    const int w = int(datos::ANCHO_ESCENA * s);
+    const int h = int(datos::ALTO_ESCENA * s);
+    const int mx = (width() - w) / 2;
+    const int my = (height() - h) / 2;
+    setViewportMargins(mx, my, width() - w - mx, height() - h - my);
+    setTransform(QTransform::fromScale(s, s));
 }
 
 void vistaNivel::crearDibujos(const std::vector<proyectil>& pool,
@@ -232,8 +281,9 @@ QPixmap vistaNivel::prepararFrame(const QString& ruta, double escala)
     // Calcula el rectangulo que ocupa el personaje
     int minX = img.width(), minY = img.height(), maxX = -1, maxY = -1;
     for (int y = 0; y < img.height(); ++y) {
+        const QRgb* fila = reinterpret_cast<const QRgb*>(img.constScanLine(y));
         for (int x = 0; x < img.width(); ++x) {
-            if (qAlpha(img.pixel(x, y)) >= 10) {
+            if (qAlpha(fila[x]) >= 10) {
                 if (x < minX) minX = x;
                 if (x > maxX) maxX = x;
                 if (y < minY) minY = y;
@@ -276,8 +326,9 @@ QPixmap vistaNivel::recortarSprite(const QString& ruta, double altoDeseado)
 
     int minX = img.width(), minY = img.height(), maxX = -1, maxY = -1;
     for (int y = 0; y < img.height(); ++y) {
+        const QRgb* fila = reinterpret_cast<const QRgb*>(img.constScanLine(y));
         for (int x = 0; x < img.width(); ++x) {
-            if (qAlpha(img.pixel(x, y)) >= 10) {
+            if (qAlpha(fila[x]) >= 10) {
                 if (x < minX) minX = x;
                 if (x > maxX) maxX = x;
                 if (y < minY) minY = y;
@@ -366,6 +417,7 @@ void vistaNivel::actualizarFundidoMuerte()
     spriteMoriste->setOpacity(opacidadMuerte);
     if (opacidadMuerte >= 1.0) {
         relojMuerte->stop();
+        posicionarBotonesFinales();
         btnReintentar->show();
         btnMenu->show();
     }
@@ -390,5 +442,42 @@ void vistaNivel::posicionarBotonesFinales()
         btnMenu->setGeometry(centroX, int(h * 0.62) + altoBtn + 16, anchoBtn, altoBtn);
     }
 }
+void vistaNivel::reproducirDanio()
+{
+    QSoundEffect* actual = (turnoGolpe % 2 == 0) ? sonidoGolpe1 : sonidoGolpe2;
+    turnoGolpe = (turnoGolpe + 1) % 2;
+    if (actual && actual->status() != QSoundEffect::Error) {
+        actual->play();
+    }
+}
+
+void vistaNivel::reproducirMuerte()
+{
+    if (sonidoMuerte && sonidoMuerte->status() != QSoundEffect::Error) {
+        sonidoMuerte->play();
+    }
+}
+
+void vistaNivel::reproducirBufo()
+{
+    if (sonidoBufo && sonidoBufo->status() != QSoundEffect::Error) {
+        sonidoBufo->play();
+    }
+}
+
+void vistaNivel::reproducirGameOver()
+{
+    if (sonidoGameOver && sonidoGameOver->status() != QSoundEffect::Error) {
+        sonidoGameOver->play();
+    }
+}
+
+void vistaNivel::reproducirVictoria()
+{
+    if (sonidoVictoria && sonidoVictoria->status() != QSoundEffect::Error) {
+        sonidoVictoria->play();
+    }
+}
+
 
 

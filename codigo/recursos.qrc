@@ -44,5 +44,9 @@
         <file>capitan/obstaculos/6.png</file>
         <file>capitan/obstaculos/7.png</file>
         <file>capitan/obstaculos/8.png</file>
+        <file>capitan/sonidos_danio/1.wav</file>
+        <file>capitan/sonidos_danio/2.wav</file>
+        <file>capitan/sonidos_danio/3.wav</file>
+        <file>capitan/bufo/bufo.wav</file>
     </qresource>
 </RCC>
