@@ -31,7 +31,7 @@ vistaN2::vistaN2(QWidget* parent)
     ultimaDirX(0), ultimaDirY(1), tiempoAnimacion(0.0), tiempoLanzando(0.0),
     vidasPrevias(nivel.getPersonaje().getVidas()),
     jefeEstabaVivo(nivel.getJefe().estaVivo()),
-    teclaW(false), teclaA(false), teclaS(false), teclaD(false)
+    fortachonPrevio(nivel.getPersonaje().getFortachon() && nivel.getPersonaje().getTFortachon() > 0.0)
 {
     escena->setSceneRect(0.0, 0.0, datos::ANCHO_ESCENA, datos::ALTO_ESCENA);
     setBackgroundBrush(Qt::black);

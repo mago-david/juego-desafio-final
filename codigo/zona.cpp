@@ -1,6 +1,7 @@
 #include "zona.h"
 #include "datos.h"
 #include <stdexcept>
+#include <algorithm>
 #include <cmath>
 using namespace std;
 zona::zona() : zona(QPointF(0,0), 1.0, 1.0)
@@ -72,6 +73,10 @@ bool zona::operator==(const zona& o) const {
 bool zona::contiene(const objetoCircular& e) const
 {
     const QPointF& c = e.getPosicion();
-    return c.x()+e.getRadio() >= getIzquierda() && c.x()+e.getRadio() <= getDerecha()
-           && c.y()+e.getRadio() >= getArriba()    && c.y()+e.getRadio() <= getAbajo();
+    const double r = e.getRadio();
+    const double closestX = std::max(getIzquierda(), std::min(c.x(), getDerecha()));
+    const double closestY = std::max(getArriba(), std::min(c.y(), getAbajo()));
+    const double dx = c.x() - closestX;
+    const double dy = c.y() - closestY;
+    return (dx * dx + dy * dy) <= (r * r);
 }
