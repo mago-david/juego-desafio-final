@@ -16,7 +16,7 @@ const bool   DIFICIL    = true;
 
 nivel2::nivel2(bool dificil, bool fortachon)
     : personaje(QPointF(datos::CENTRO_X, datos::CENTRO_Y + DY_INICIO), datos::VIDAS_INICIALES, fortachon),
-    jefeFinal(VIDA_JEFE, dificil), efectos(N_EFECTOS), balas(), esbirros(N_ESBIRROS)
+    jefeFinal(VIDA_JEFE, dificil), efectos(N_EFECTOS), balas(), esbirros(N_ESBIRROS), tiempoBufo(0.0)
 {
     construirArena();
     construirBalas();
@@ -60,10 +60,16 @@ void nivel2::actualizar(double dt)
 
     jefeFinal.actualizar(dt,personaje.getPosicion(),personaje.getVelocidad(),
                          efectos,balas,esbirros);
+    jefeFinal.actualizar(dt,personaje.getPosicion(),efectos,balas,esbirros);
 
     actualizarBalas(dt);
     actualizarEfectos(dt);
     actualizarEsbirros(dt);
+    tiempoBufo += dt;
+    if (tiempoBufo >= INTERVALO_BUFO) {
+        tiempoBufo -= INTERVALO_BUFO;
+        generarBufoAleatorio();
+    }
 }
 
 void nivel2::actualizarBalas(double dt)
@@ -88,13 +94,51 @@ void nivel2::actualizarBalas(double dt)
     }
 }
 
+void nivel2::generarBufoAleatorio()
+{
+    efecto* slotLibre = nullptr;
+    for (size_t i = 0; i < efectos.size(); ++i) {
+        if (!efectos[i].getactivo()) {
+            slotLibre = &efectos[i];
+            break;
+        }
+    }
+    if (!slotLibre)
+        return;
+
+    const double g = datos::GROSOR_PARED;
+    const double minX = datos::X_ARENA + g + 16.0;
+    const double maxX = datos::X_ARENA + datos::LADO_ARENA - g - LADO_BUFO - 16.0;
+    const double minY = g + 16.0;
+    const double maxY = datos::LADO_ARENA - g - LADO_BUFO - 16.0;
+
+    if (maxX <= minX || maxY <= minY)
+        return;
+
+    const double rx = double(std::rand()) / double(RAND_MAX);
+    const double ry = double(std::rand()) / double(RAND_MAX);
+    const QPointF esquina(minX + rx * (maxX - minX), minY + ry * (maxY - minY));
+    const zona candidata(esquina, LADO_BUFO, LADO_BUFO);
+    const obstaculo& cuerpoJefe = jefeFinal.getCuerpo();
+    const bool solapaJefe = !(candidata.getDerecha() <= cuerpoJefe.getIzquierda() ||
+                              candidata.getIzquierda() >= cuerpoJefe.getDerecha() ||
+                              candidata.getAbajo() <= cuerpoJefe.getArriba() ||
+                              candidata.getArriba() >= cuerpoJefe.getAbajo());
+    if (solapaJefe)
+        return;
+
+    slotLibre->settipo(efecto::bufo);
+    slotLibre->setAncho(LADO_BUFO);
+    slotLibre->setAlto(LADO_BUFO);
+    slotLibre->activar(esquina, DURACION_BUFO);
+}
+
 void nivel2::actualizarEfectos(double dt)
 {
     personaje.setEnNube(false);
-    for(efecto& e:efectos)
-    {
-        e.actualizar(dt);
-        e.aplicar(personaje);
+    for (size_t i = 0; i < efectos.size(); ++i) {
+        efectos[i].actualizar(dt);
+        efectos[i].aplicar(personaje);
     }
 }
 
@@ -184,12 +228,13 @@ nivel2& nivel2::operator=(const nivel2& o)
 {
     if (this != &o)
     {
-        paredes   = o.paredes;
-        personaje = o.personaje;
-        jefeFinal = o.jefeFinal;
-        efectos   = o.efectos;
-        balas     = o.balas;
-        esbirros=o.esbirros;
+        paredes    = o.paredes;
+        personaje  = o.personaje;
+        jefeFinal  = o.jefeFinal;
+        efectos    = o.efectos;
+        balas      = o.balas;
+        esbirros   = o.esbirros;
+        tiempoBufo = o.tiempoBufo;
     }
     return *this;
 }
@@ -201,21 +246,5 @@ bool nivel2::operator==(const nivel2& o) const
            && jefeFinal == o.jefeFinal
            && efectos == o.efectos
            && balas == o.balas
-        &&esbirros==o.esbirros;
+           && esbirros == o.esbirros;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

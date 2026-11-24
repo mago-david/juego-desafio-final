@@ -7,15 +7,20 @@ using namespace std;
 const double VEL_SALTO=350.0;
 const double TOLERANCIA_SUELO = 1.0;
 const int CABEZA_EXTRA=24;
-//capitanN1::capitanN1() {}
+capitanN1::capitanN1() : capitanN1(QPointF(0.0, 0.0))
+{}
+
 capitanN1::capitanN1(const QPointF& pos, int vidas_)
     : capitan(pos, QPointF(0.0, 0.0), 1.0, 20.0,
-              true, vidas_, datos::VIDAS_INICIALES),
+              true, vidas_, datos::VIDAS_INICIALES + 1),
     direccion(0),
     saltosRestantes(2),
     enSuelo(false),
     posicionAnterior(pos),
-    T_sinPlataformas(0.0) {}
+    T_sinPlataformas(0.0)
+{}
+
+capitanN1::~capitanN1() {}
 
 void capitanN1::actualizar(double dt)
 {

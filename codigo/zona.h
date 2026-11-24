@@ -9,9 +9,10 @@ private:
     double ancho;
     double alto;
 public:
+    zona();
     zona(const QPointF& esquina_, double ancho_, double alto_);
     zona(const zona& o) = default;
-
+    ~zona();
     //acceso
     const QPointF& getEsquina() const;
     double getAncho() const;

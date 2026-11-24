@@ -1,27 +1,85 @@
 #ifndef VISTAN2_H
 #define VISTAN2_H
 #include <QVector>
+#include <QPixmap>
 #include "vistaNivel.h"
 #include "nivel2.h"
 
-class QGraphicsEllipseItem;
+class QGraphicsRectItem;
+class QGraphicsPixmapItem;
+class QGraphicsSimpleTextItem;
 class QMouseEvent;
 
-class vistaN2:public vistaNivel
+class vistaN2 : public vistaNivel
 {
     Q_OBJECT
 private:
     nivel2 nivel;
-    QGraphicsEllipseItem* dibujoPersonaje;
-    QVector<QGraphicsEllipseItem*> dibujoEscudos;
+    QGraphicsPixmapItem* dibujoPersonaje;
+    QVector<QGraphicsPixmapItem*> dibujoEscudos;
+    QGraphicsPixmapItem* dibujoJefe;
+    QVector<QGraphicsPixmapItem*> dibujoBalas;
+    QVector<QGraphicsRectItem*> dibujoEfectos;
+    QVector<QGraphicsPixmapItem*> dibujoBufos;
+    QVector<QGraphicsPixmapItem*> dibujoEsbirros;
+    QGraphicsSimpleTextItem* textoVidas;
+
+    // Sprites Capitán N2
+    QPixmap spriteAbajoQuieto;
+    QVector<QPixmap> framesAbajoCaminar;
+    QVector<QPixmap> framesAbajoSinEscudo;
+    QVector<QPixmap> framesAbajoLanzar;
+
+    QPixmap spriteArribaQuieto;
+    QVector<QPixmap> framesArribaCaminar;
+
+    QPixmap spriteDerechaQuieto;
+    QVector<QPixmap> framesDerechaCaminar;
+    QVector<QPixmap> framesDerechaLanzar;
+
+    QPixmap spriteIzquierdaQuieto;
+    QVector<QPixmap> framesIzquierdaCaminar;
+    QVector<QPixmap> framesIzquierdaLanzar;
+
+    QPixmap spriteEscudo;
+    QPixmap spriteBala;
+    QPixmap spriteBufo;
+
+    // Sprites Arena / Jefe / Esbirros (capitan2/jefe/1..5.png)
+    QPixmap spritePiso;
+    QPixmap spriteMuroHorizontal;
+    QPixmap spriteMuroVertical;
+    QPixmap spriteEsbirro;
+    QPixmap spriteJefe;
+
+    // Estado visual / animación
+    int ultimaDirX;
+    int ultimaDirY;
+    double tiempoAnimacion;
+    double tiempoLanzando;
+    int vidasPrevias;
+    bool jefeEstabaVivo;
+    bool fortachonPrevio;
+
     bool teclaW;
     bool teclaA;
     bool teclaS;
     bool teclaD;
 
+    QVector<QPixmap> cargarListaFrames(const QString& carpeta, const QVector<int>& indices, double escala);
+    QVector<QPixmap> voltearListaHorizontal(const QVector<QPixmap>& orig);
+    void cargarSprites();
     void dibujarArena();
     void dibujarPersonaje();
+    void dibujarJefe();
+    void crearEfectos();
+    void dibujarEfectos();
+    void crearBufos();
+    void dibujarBufos();
+    void crearEsbirros();
+    void dibujarEsbirros();
     void actualizarDireccion();
+    const QPixmap& elegirFrameCapitan() const;
 protected:
     void avanzarLogica(double dt) override;
     void dibujar(double alfa) override;

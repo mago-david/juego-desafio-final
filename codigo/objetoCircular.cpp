@@ -3,6 +3,8 @@
 using namespace std;
 #include "datos.h"
 #include <cmath>
+objetoCircular::objetoCircular() : objetoCircular(QPointF(0,0), QPointF(0,0), 1.0, 1.0, true)
+{}
 
 objetoCircular::objetoCircular(const QPointF& pos, const QPointF& vel,
                                double masa_, double radio_, bool usaGravedad_)
@@ -57,6 +59,15 @@ void objetoCircular::setRadio(double r) {
     if (r <= 0.0)
         throw invalid_argument("El radio debe ser mayor que cero");
     radio = r;
+}
+
+//colisiones
+
+bool objetoCircular::circuloVScirculo(const objetoCircular& o)const
+{
+    const QPointF d = posicion - o.posicion;
+    const double r = radio + o.radio;
+    return d.x() * d.x() + d.y() * d.y() <= r * r;
 }
 
 // operadores

@@ -3,24 +3,27 @@
 #include "zona.h"
 #include "capitan.h"
 
-class muroperseguidor:public zona
+class muroPerseguidor:public zona
 {
 private:
     double velocidad;//pixeles x s
     bool activo;
 public:
-    muroperseguidor();
-    muroperseguidor(const QPointF& esquina_, double ancho_, double alto_,double velocidad_ = 60.0);
-    muroperseguidor(const muroperseguidor& o);
-    ~muroperseguidor();
+    muroPerseguidor();
+    muroPerseguidor(const QPointF& esquina_, double ancho_, double alto_,double velocidad_ = 60.0);
+    muroPerseguidor(const muroPerseguidor& o);
+    ~muroPerseguidor();
+    //accion
     void actualizar(double dt);
     bool aplicar(capitan& c)const;
+    //acceso
     double getvelocidad()const;
     bool getactivo()const;
     void setvelocidad(double v);
     void setactivo(bool a);
-    muroperseguidor& operator=(const muroperseguidor& o);
-    bool operator==(const muroperseguidor& o)const;
+    //operadores
+    muroPerseguidor& operator=(const muroPerseguidor& o);
+    bool operator==(const muroPerseguidor& o)const;
 };
 
 #endif // MUROPERSEGUIDOR_H

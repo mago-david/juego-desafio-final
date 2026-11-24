@@ -12,6 +12,7 @@ private:
     double radio;
     bool gravedad;
 public:
+    objetoCircular();
     objetoCircular(const QPointF& pos, const QPointF& vel, double masa_, double radio_,
                    bool usaGravedad_ = true);
     objetoCircular(const objetoCircular& o) = default;
@@ -31,6 +32,9 @@ public:
     void setMasa(double m);
     void setRadio(double r);
     void setUsaGravedad(bool g);
+
+    //colision
+    bool circuloVScirculo(const objetoCircular& o)const;
 
     //operadores
     objetoCircular& operator=(const objetoCircular& o);

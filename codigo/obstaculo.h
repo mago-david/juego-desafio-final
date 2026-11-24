@@ -8,15 +8,18 @@ class obstaculo:public zona
 {
 private:
     bool atravesable;
+    int spriteId;
 public:
-    obstaculo(const QPointF& esquina_, double ancho_,
-              double alto_,bool atravesable_=false);
-    obstaculo(const QPointF& esquina_, double lado);
+    obstaculo();
+    obstaculo(const QPointF& pos, double ancho, double alto, bool atravesable = false, int spriteId = 0);
     obstaculo(const obstaculo& o) = default;
+    ~obstaculo();
 
     //acceso
     bool getAtravesable()const;
     void setAtravesable(bool t);
+    int getSpriteId() const;
+    void setSpriteId(int id);
 
     //operadores
     obstaculo& operator=(const obstaculo& o);
