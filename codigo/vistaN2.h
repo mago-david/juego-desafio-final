@@ -59,6 +59,7 @@ private:
     double tiempoLanzando;
     int vidasPrevias;
     bool jefeEstabaVivo;
+    bool fortachonPrevio;
 
     bool teclaW;
     bool teclaA;

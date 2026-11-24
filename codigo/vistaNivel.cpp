@@ -86,10 +86,10 @@ void vistaNivel::iniciar()
     cronometro.start();
     pausado = false;
     enPantallaFinal = false;
+    alPerderFoco();
     reloj->start(16);
     setFocus();
 }
-
 void vistaNivel::pausar()
 {
     pausado=true;
@@ -98,6 +98,7 @@ void vistaNivel::pausar()
 
 void vistaNivel::terminar(bool gano)
 {
+    alPerderFoco();
     pausar();
     ganoNivel = gano;
     emit terminado(gano);

@@ -415,6 +415,12 @@ void vistaN2::avanzarLogica(double dt)
         else
             reproducirDanio();
     }
+    const capitanN2& cap = nivel.getPersonaje();
+    const bool fortachonAhora = cap.getFortachon() && cap.getTFortachon() > 0.0;
+    if (fortachonAhora && !fortachonPrevio) {
+        reproducirBufo();
+    }
+    fortachonPrevio = fortachonAhora;
     vidasPrevias = vidasActuales;
     const bool jefeVivo = nivel.getJefe().estaVivo();
     if (jefeEstabaVivo && !jefeVivo) {
