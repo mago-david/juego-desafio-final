@@ -11,6 +11,9 @@ const int    N_BALAS    = 10;
 const double MASA_BALA  = 1.0;     // la base exige > 0
 const double RADIO_BALA = 6.0;     // <= MARGEN_BALA de jefe.cpp
 const int    N_ESBIRROS = 4;       // tanda viva a la vez
+const double INTERVALO_BUFO = 30.0;
+const double DURACION_BUFO  = 10.0;
+const double LADO_BUFO      = 28.0;
 const bool   DIFICIL    = true;
 }
 
@@ -60,7 +63,6 @@ void nivel2::actualizar(double dt)
 
     jefeFinal.actualizar(dt,personaje.getPosicion(),personaje.getVelocidad(),
                          efectos,balas,esbirros);
-    jefeFinal.actualizar(dt,personaje.getPosicion(),efectos,balas,esbirros);
 
     actualizarBalas(dt);
     actualizarEfectos(dt);
