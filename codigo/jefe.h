@@ -38,12 +38,20 @@ private:
     int curaRestante;
     int esbirrosLanzados;
 
+    //para el aprendizaje
+    double k;
+    QPointF posRef;
+    QPointF velRef;
+    double T_obs;
+
+private:
     void construirChorros(std::vector<efecto>& reserva, double x0, double y0,
                           efecto::tipoefecto tipo, double duracion) const;
     void atacarConChorros(std::vector<efecto>& efectos) const;
     void atacarConBalas(std::vector<efecto>& efectos, std::vector<proyectil>& balas);
     void atacarConLluvia(std::vector<efecto>& efectos)const;
-    void atacarDesdeEsquina(double dt,const QPointF& poscapi,std::vector<proyectil>&balas);
+    void atacarDesdeEsquina(double dt,const QPointF& poscapi,const QPointF& vel,
+                            std::vector<proyectil>&balas);
     //donde nace la bala
     QPointF puntoBala(int i) const;
     //fase dificil
@@ -52,15 +60,18 @@ private:
     void terminarCura();
     void lanzarEsbirro(esbirro& s, int i);
 public:
+    jefe();
     explicit jefe(int vidaMax_, bool faseEsbirros_ = false);
     jefe(const jefe& o) = default;
+    ~jefe();
 
-    //con el jugador
+    //los 4 modulos del ajente intelijente
     cuadrante percibir(const QPointF& posCapi)const;
     void razonar(); //elije el ataque,modo y zona
     void actuar(std::vector<efecto>& efectos, std::vector<proyectil>& ba);
+    void aprender(double dt,const QPointF& poscapi,const QPointF& vel);
     //ciclo de recarga->aviso->atque
-    bool actualizar(double dt, const QPointF& posJugador, std::vector<efecto>& efectos,
+    void actualizar(double dt, const QPointF& posJugador,const QPointF& vel, std::vector<efecto>& efectos,
                     std::vector<proyectil>& balas,std::vector<esbirro>& esbirros);
     bool estaVivo() const;
     bool recibirDanio(int d);
@@ -97,6 +108,14 @@ public:
     void setFaseEsbirros(bool f);
     void setCuraRestante(int c);
     void setEsbirrosLanzados(int n);
+    double getK() const;
+    const QPointF& getPosRef() const;
+    const QPointF& getVelRef() const;
+    double getT_obs() const;
+    void setK(double k);
+    void setPosRef(const QPointF& p);
+    void setVelRef(const QPointF& v);
+    void setT_obs(double t);
 
     //operadores
     jefe& operator=(const jefe& o);
