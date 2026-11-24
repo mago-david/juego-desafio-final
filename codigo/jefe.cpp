@@ -10,55 +10,56 @@ using namespace std;
 namespace
 {
 //generador sin qt y lo hacemos aqui para evitar recalcular todo el tiempo
-    std::mt19937 generador(static_cast<unsigned>(
+std::mt19937 generador(static_cast<unsigned>(
     std::chrono::steady_clock::now().time_since_epoch().count()));
-    const QPointF CENTRO(datos::CENTRO_X, datos::CENTRO_Y);
+const QPointF CENTRO(datos::CENTRO_X, datos::CENTRO_Y);
 
-    const int NUM_MODOS = 3;
-    const int NUM_ORIENTACIONES = 2;
-    //tiempos
-    const double T_RECARGA = 2.0;
-    const double T_AVISO   = 1.0;
-    const double T_DISPARO = 1.5;
-    const double T_GAS     = 6.0;
-    //chorros
-    const double GROSOR_CHORRO = 35.0;
-    const double FUERZA_CHORRO = 160.0;
-    //lados para el cuadrante
-    const double MITAD_ARENA = (datos::LADO_ARENA - 2.0 * datos::GROSOR_PARED) / 2.0;
-    //balas
-    const int    NUM_BALAS         = 3;
-    const double INTERVALO_BALA    = 0.2;
-    const double VEL_BALA          = 380.0;
-    const double SEPARACION_FLANCO = 90.0;
-    const double LADO_SENAL        = 30.0;
-    const double MARGEN_BALA       = 15.0;
+const int NUM_MODOS = 3;
+const int NUM_ORIENTACIONES = 2;
+//tiempos
+const double T_RECARGA = 2.0;
+const double T_AVISO   = 1.0;
+const double T_DISPARO = 1.5;
+const double T_GAS     = 6.0;
+//chorros
+const double GROSOR_CHORRO = 35.0;
+const double FUERZA_CHORRO = 160.0;
+//lados para el cuadrante
+const double MITAD_ARENA = (datos::LADO_ARENA - 2.0 * datos::GROSOR_PARED) / 2.0;
+//balas
+const int    NUM_BALAS         = 3;
+const double INTERVALO_BALA    = 0.2;
+const double VEL_BALA          = 380.0;
+const double SEPARACION_FLANCO = 90.0;
+const double LADO_SENAL        = 30.0;
+const double MARGEN_BALA       = 15.0;
 
-    //datos pa las bombas/lluvias
-    const double CERCA = MITAD_ARENA / 4.0;
-    const double LEJOS = 3.0 * MITAD_ARENA / 4.0;
-    //posibles ubicaciones de las nubes
-    const std::array<QPointF, 14> POS_LLUVIA = {{
-                                                  {-LEJOS, -LEJOS},                                    {LEJOS, -LEJOS},   // arriba: el centro es el jefe
-                                                  {-LEJOS, -CERCA}, {-CERCA, -CERCA}, {CERCA, -CERCA}, {LEJOS, -CERCA},
-                                                  {-LEJOS,  CERCA}, {-CERCA,  CERCA}, {CERCA,  CERCA}, {LEJOS,  CERCA},
-                                                  {-LEJOS,  LEJOS}, {-CERCA,  LEJOS}, {CERCA,  LEJOS}, {LEJOS,  LEJOS} }};
-    const double LADO_NUBE = 70.0;
+//datos pa las bombas/lluvias
+const double CERCA = MITAD_ARENA / 4.0;
+const double LEJOS = 3.0 * MITAD_ARENA / 4.0;
+//posibles ubicaciones de las nubes
+const std::array<QPointF, 14> POS_LLUVIA = {{
+                                              {-LEJOS, -LEJOS},                                    {LEJOS, -LEJOS},   // arriba: el centro es el jefe
+                                              {-LEJOS, -CERCA}, {-CERCA, -CERCA}, {CERCA, -CERCA}, {LEJOS, -CERCA},
+                                              {-LEJOS,  CERCA}, {-CERCA,  CERCA}, {CERCA,  CERCA}, {LEJOS,  CERCA},
+                                              {-LEJOS,  LEJOS}, {-CERCA,  LEJOS}, {CERCA,  LEJOS}, {LEJOS,  LEJOS} }};
+const double LADO_NUBE = 70.0;
 
-    //ataque esquinas
-    const int    NUM_ESQUINAS      = 4;
-    const double INTERVALO_ESQUINA = 1;
-    const double VEL_ESQUINA       = 245.0;
-    const double ESPERA_ESQUINA    = 2.0;
+//ataque esquinas
+const int    NUM_ESQUINAS      = 4;
+const double INTERVALO_ESQUINA = 1;
+const double VEL_ESQUINA       = 245.0;
+const double ESPERA_ESQUINA    = 2.0;
 
-    //cuerpo del jefe: el sprite entero es solido y recibe dano
-    const obstaculo CUERPO(QPointF(datos::X_JEFE, datos::Y_JEFE), datos::ANCHO_JEFE, datos::ALTO_JEFE);
+//cuerpo del jefe: el sprite entero es solido y recibe dano
+const obstaculo CUERPO(QPointF(datos::X_JEFE, datos::Y_JEFE), datos::ANCHO_JEFE, datos::ALTO_JEFE);
 
-    //fase dificil
-    const int    LIMITE_ESBIRROS = 8;
-    const int    VIDA_ESBIRRO    = 30;
-    const double INTERVALO_CURA  = 0.3;
+//fase dificil
+const int    LIMITE_ESBIRROS = 8;
+const int    VIDA_ESBIRRO    = 30;
+const double INTERVALO_CURA  = 0.3;
 }
+
 jefe::jefe() : jefe(1, false)
 {}
 
@@ -583,7 +584,7 @@ bool jefe::operator==(const jefe& o) const
            && std::abs(T_fase - o.T_fase) <= datos::EPSILON
            && ataqueActual == o.ataqueActual
            && modoAtaque == o.modoAtaque
-            && bombas == o.bombas
+           && bombas == o.bombas
            && balasLanzadas == o.balasLanzadas
            && objetivo == o.objetivo
            && std::abs(T_esquina - o.T_esquina) <= datos::EPSILON
@@ -592,7 +593,3 @@ bool jefe::operator==(const jefe& o) const
            && curaRestante == o.curaRestante
            && esbirrosLanzados == o.esbirrosLanzados;
 }
-
-
-
-

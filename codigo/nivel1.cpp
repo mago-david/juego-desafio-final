@@ -59,7 +59,7 @@ void nivel1::construirMapa()
     manifestantes.clear();
     const double s = Y_SUELO;
 
-    // Limites del mapa
+    // Limites del mapa (ANCHO_NIVEL1 = 6800.0)
     plataformas.emplace_back(QPointF(0.0, s),          anchoMapa, 60.0,     false, 7); // suelo
     plataformas.emplace_back(QPointF(-30.0, 0.0),      30.0,      s + 60.0, false, 0); // pared izquierda
     plataformas.emplace_back(QPointF(anchoMapa, 0.0),  30.0,      s + 60.0, false, 0); // pared derecha
@@ -162,7 +162,7 @@ void nivel1::construirProy()
                                   LACRIMOGENA_REBOTES, LACRIMOGENA_E);
         lacrimogenas.back().setActivo(false);
     }
-    //nubes sin posicion: no sabemos donde se dispararan
+    // nubes sin posicion: no sabemos donde se dispararan
     nubes.reserve(N_LACRIMOGENAS);
     for (int i = 0; i < N_LACRIMOGENAS; ++i)
     {
@@ -173,7 +173,8 @@ void nivel1::construirProy()
 
 void nivel1::actualizar(double dt)
 {
-    muro.actualizar(dt);              // no hace nada mientras este inactivo
+    if (muro.getactivo())
+        muro.actualizar(dt);              // no hace nada mientras este inactivo
     if (muro.aplicar(personaje))
         return;                       // toco el borde izquierdo, muere al instante
 

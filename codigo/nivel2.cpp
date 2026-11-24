@@ -1,22 +1,27 @@
 #include "nivel2.h"
 #include "datos.h"
 #include <stdexcept>
+#include <cstdlib>
+#include <QDebug>
 
 namespace
 {
-const double DY_INICIO  = 180.0;   // el capi empieza debajo del jefe
-const int    VIDA_JEFE  = 300;     // escala x10: el escudo hace 10 (15 fortachon)
-const int    N_EFECTOS  = 16;      // peor caso: 7 nubes vivas + 7 señales de otra lluvia
-const int    N_BALAS    = 10;
-const double MASA_BALA  = 1.0;     // la base exige > 0
-const double RADIO_BALA = 6.0;     // <= MARGEN_BALA de jefe.cpp
-const int    N_ESBIRROS = 4;       // tanda viva a la vez
-const bool   DIFICIL    = true;
+const double DY_INICIO      = 180.0;   // el capi empieza debajo del jefe
+const int    VIDA_JEFE      = 300;     // escala x10: el escudo hace 10 (15 fortachon)
+const int    N_EFECTOS      = 16;      // peor caso: 7 nubes vivas + 7 señales de otra lluvia
+const int    N_BALAS        = 10;
+const double MASA_BALA      = 1.0;     // la base exige > 0
+const double RADIO_BALA     = 6.0;     // <= MARGEN_BALA de jefe.cpp
+const int    N_ESBIRROS     = 4;       // tanda viva a la vez
+const double INTERVALO_BUFO = 30.0;
+const double DURACION_BUFO  = 10.0;
+const double LADO_BUFO      = 28.0;
+const bool   DIFICIL        = true;
 }
 
 nivel2::nivel2(bool dificil, bool fortachon)
     : personaje(QPointF(datos::CENTRO_X, datos::CENTRO_Y + DY_INICIO), datos::VIDAS_INICIALES, fortachon),
-    jefeFinal(VIDA_JEFE, dificil), efectos(N_EFECTOS), balas(), esbirros(N_ESBIRROS)
+    jefeFinal(VIDA_JEFE, dificil), efectos(N_EFECTOS), balas(), esbirros(N_ESBIRROS), tiempoBufo(0.0)
 {
     construirArena();
     construirBalas();
@@ -63,6 +68,11 @@ void nivel2::actualizar(double dt)
     actualizarBalas(dt);
     actualizarEfectos(dt);
     actualizarEsbirros(dt);
+    tiempoBufo += dt;
+    if (tiempoBufo >= INTERVALO_BUFO) {
+        tiempoBufo -= INTERVALO_BUFO;
+        generarBufoAleatorio();
+    }
 }
 
 void nivel2::actualizarBalas(double dt)
@@ -87,13 +97,51 @@ void nivel2::actualizarBalas(double dt)
     }
 }
 
+void nivel2::generarBufoAleatorio()
+{
+    efecto* slotLibre = nullptr;
+    for (size_t i = 0; i < efectos.size(); ++i) {
+        if (!efectos[i].getactivo()) {
+            slotLibre = &efectos[i];
+            break;
+        }
+    }
+    if (!slotLibre)
+        return;
+
+    const double g = datos::GROSOR_PARED;
+    const double minX = datos::X_ARENA + g + 16.0;
+    const double maxX = datos::X_ARENA + datos::LADO_ARENA - g - LADO_BUFO - 16.0;
+    const double minY = g + 16.0;
+    const double maxY = datos::LADO_ARENA - g - LADO_BUFO - 16.0;
+
+    if (maxX <= minX || maxY <= minY)
+        return;
+
+    const double rx = double(std::rand()) / double(RAND_MAX);
+    const double ry = double(std::rand()) / double(RAND_MAX);
+    const QPointF esquina(minX + rx * (maxX - minX), minY + ry * (maxY - minY));
+    const zona candidata(esquina, LADO_BUFO, LADO_BUFO);
+    const obstaculo& cuerpoJefe = jefeFinal.getCuerpo();
+    const bool solapaJefe = !(candidata.getDerecha() <= cuerpoJefe.getIzquierda() ||
+                              candidata.getIzquierda() >= cuerpoJefe.getDerecha() ||
+                              candidata.getAbajo() <= cuerpoJefe.getArriba() ||
+                              candidata.getArriba() >= cuerpoJefe.getAbajo());
+    if (solapaJefe)
+        return;
+
+    slotLibre->settipo(efecto::bufo);
+    slotLibre->setAncho(LADO_BUFO);
+    slotLibre->setAlto(LADO_BUFO);
+    slotLibre->activar(esquina, DURACION_BUFO);
+}
+
 void nivel2::actualizarEfectos(double dt)
 {
     personaje.setEnNube(false);
-    for(efecto& e:efectos)
-    {
-        e.actualizar(dt);
-        e.aplicar(personaje);
+    for (size_t i = 0; i < efectos.size(); ++i) {
+        efectos[i].actualizar(dt);
+        efectos[i].aplicar(personaje);
     }
 }
 
@@ -183,12 +231,13 @@ nivel2& nivel2::operator=(const nivel2& o)
 {
     if (this != &o)
     {
-        paredes   = o.paredes;
-        personaje = o.personaje;
-        jefeFinal = o.jefeFinal;
-        efectos   = o.efectos;
-        balas     = o.balas;
-        esbirros=o.esbirros;
+        paredes    = o.paredes;
+        personaje  = o.personaje;
+        jefeFinal  = o.jefeFinal;
+        efectos    = o.efectos;
+        balas      = o.balas;
+        esbirros   = o.esbirros;
+        tiempoBufo = o.tiempoBufo;
     }
     return *this;
 }
@@ -200,21 +249,5 @@ bool nivel2::operator==(const nivel2& o) const
            && jefeFinal == o.jefeFinal
            && efectos == o.efectos
            && balas == o.balas
-        &&esbirros==o.esbirros;
+           && esbirros == o.esbirros;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -14,9 +14,11 @@ private:
     std::vector<efecto> efectos;
     std::vector<proyectil>balas;
     std::vector<esbirro> esbirros;
+    double tiempoBufo;
 
     void construirArena();
     void construirBalas();
+    void generarBufoAleatorio();
     void actualizarBalas(double dt);
     void actualizarEfectos(double dt);
     void actualizarEsbirros(double dt);

@@ -1,5 +1,6 @@
 #include "efecto.h"
 #include "datos.h"
+#include "capitanN2.h"
 #include <stdexcept>
 #include <cmath>
 
@@ -24,7 +25,7 @@ efecto::~efecto() {}
 
 void efecto::actualizar(double dt)
 {
-    if (!activo || tipo == bufo || duracion <= 0.0)   // bufo y duración 0 (manifestantes) no expiran
+    if (!activo || tipo == bufo || duracion <= 0.0)   // bufo y duracion 0 (manifestantes) no expiran
         return;
     duracion -= dt;
     if (duracion <= 0.0) {
@@ -40,7 +41,6 @@ void efecto::activar(const QPointF& esquina_, double duracion_)
     activo = true;
 }
 
-
 bool efecto::aplicar(capitan& c)
 {
     if (!activo || !contiene(c))
@@ -49,11 +49,17 @@ bool efecto::aplicar(capitan& c)
     case gas:
         c.setEnNube(true);
         return true;
-    case bufo:
+    case bufo: {
         c.ganarVida();
-        c.setT_veloz(duracion);
+        capitanN2* capN2 = dynamic_cast<capitanN2*>(&c);
+        if (capN2 != nullptr) {
+            capN2->activarBufoDanio(duracion);
+        } else {
+            c.setT_veloz(duracion);
+        }
         activo = false;
         return true;
+    }
     case danio: {
         if (!c.recibirDanio())
             return false;
@@ -77,7 +83,7 @@ void efecto::setactivo(bool a) { activo = a; }
 void efecto::setduracion(double d)
 {
     if (d < 0.0)
-        throw std::invalid_argument("La duración del efecto no puede ser negativa");
+        throw std::invalid_argument("La duracion del efecto no puede ser negativa");
     duracion = d;   // 0 = permanente
 }
 

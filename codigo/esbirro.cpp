@@ -19,32 +19,33 @@ esbirro::esbirro(const QPointF& pos, int vida_)
 
 esbirro::~esbirro()
 {}
-//aciones
-void esbirro::reiniciar(const QPointF& pos,int vida_)
+
+//acciones
+void esbirro::reiniciar(const QPointF& pos, int vida_)
 {
     setPosicion(pos);
-    setVelocidad(QPointF(0.0,0.0));
+    setVelocidad(QPointF(0.0, 0.0));
     setVida(vida_);
 }
 
 void esbirro::perseguir(const QPointF& objetivo)
 {
-    QPointF d=objetivo-posicion;
-    double n=hypot(d.x(),d.y());
-    if(n<1.0)
-        velocidad=QPointF(0.0,0.0);
+    QPointF d = objetivo - posicion;
+    double n = hypot(d.x(), d.y());
+    if (n < 1.0)
+        velocidad = QPointF(0.0, 0.0);
     else
-        velocidad=d*(VEL_ESBIRRO/n);
+        velocidad = d * (VEL_ESBIRRO / n);
 }
 
 void esbirro::recibirGolpe(int d)
 {
-    if(d>0)
-        vida=max(0,vida-d);
+    if (d > 0)
+        vida = max(0, vida - d);
 }
 
 bool esbirro::estaVivo() const
-{return vida>0;}
+{ return vida > 0; }
 
 //acceso
 int esbirro::getVida() const
@@ -70,20 +71,3 @@ bool esbirro::operator==(const esbirro& o) const
 {
     return objetoCircular::operator==(o) && vida == o.vida;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
