@@ -9,10 +9,11 @@ private:
     double coefRestitucion;
     bool activo;
 public:
+    proyectil();
     proyectil(const QPointF& pos, const QPointF& vel, double masa_, double radio_,
               bool gravedad_, int rebotes_, double coefRestitucion_);
     proyectil(const proyectil& o) = default;
-
+    ~proyectil();
     //lo usamos para reutilizar
     void reiniciar(const QPointF& pos,const QPointF& vel, int reboresMax);
     void registrarRebote();

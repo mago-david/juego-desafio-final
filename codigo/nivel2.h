@@ -24,7 +24,9 @@ private:
     void actualizarEsbirros(double dt);
 public:
     nivel2();
+    nivel2(bool dificil, bool fortachon = false);
     nivel2(const nivel2& o) = default;
+    ~nivel2();
 
     //mueve cap y escudo y los choca
     void actualizar(double dt);

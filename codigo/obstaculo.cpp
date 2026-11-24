@@ -4,6 +4,9 @@
 #include <algorithm>
 #include <cmath>
 using namespace std;
+obstaculo::obstaculo() : obstaculo(QPointF(0,0), 1.0, 1.0)
+{}
+
 obstaculo::obstaculo(const QPointF& esquina_, double ancho_, double alto_,
                      bool atravesable_, int spriteId_)
     : zona(esquina_, ancho_, alto_),
@@ -14,9 +17,9 @@ obstaculo::obstaculo(const QPointF& esquina_, double ancho_, double alto_,
     setAlto(alto_);
 }
 
-obstaculo::obstaculo(const QPointF& esquina_, double lado)
-    : obstaculo(esquina_, lado, lado, false, 0) {}
 
+obstaculo::~obstaculo()
+{}
 //acceso
 bool obstaculo::getAtravesable()const
 {return atravesable;}
@@ -36,12 +39,14 @@ obstaculo& obstaculo::operator=(const obstaculo& o)
     if (this != &o) {
         zona::operator=(o);
         atravesable = o.atravesable;
+        spriteId=o.spriteId;
     }
     return *this;
 }
 bool obstaculo::operator==(const obstaculo& o) const
 {
-    return zona::operator==(o) && atravesable == o.atravesable;
+    return zona::operator==(o) && atravesable == o.atravesable
+        && spriteId==o.spriteId;
 }
 
 //colisiones

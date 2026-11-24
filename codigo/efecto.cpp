@@ -5,40 +5,32 @@
 #include <cmath>
 
 efecto::efecto()
-    : zona(QPointF(0.0, 0.0), 1.0, 1.0), tipo(gas), duracion(3.0),
-    fuerzarebote(250.0), aviso(0.0), activo(false)
+    : zona(QPointF(0.0, 0.0), 1.0, 1.0), tipo(gas), duracion(datos::DURACION_EFECTO),
+    fuerzarebote(datos::REBOTE_EFECTO), activo(false)
 {}
 
 efecto::efecto(const QPointF& esquina_, double ancho_, double alto_, tipoefecto tipo_,
                double duracion_, double fuerzarebote_)
-    : zona(esquina_, ancho_, alto_), tipo(tipo_), duracion(1.0),
-    fuerzarebote(0.0), aviso(0.0), activo(true)
+    : zona(esquina_, ancho_, alto_), tipo(tipo_), duracion(1.0), fuerzarebote(0.0), activo(true)
 {
     setduracion(duracion_);
     setfuerzarebote(fuerzarebote_);
 }
 
 efecto::efecto(const efecto& o)
-    : zona(o), tipo(o.tipo), duracion(o.duracion), fuerzarebote(o.fuerzarebote),
-    aviso(o.aviso), activo(o.activo)
+    : zona(o), tipo(o.tipo), duracion(o.duracion), fuerzarebote(o.fuerzarebote), activo(o.activo)
 {}
 
 efecto::~efecto() {}
 
-bool efecto::esTemporal() const
-{
-    return tipo == gas || tipo == senal;
-}
-
 void efecto::actualizar(double dt)
 {
-   if (!activo || !esTemporal())
+    if (!activo || tipo == bufo || duracion <= 0.0)   // bufo y duracion 0 (manifestantes) no expiran
         return;
-    duracion-=dt;
-    if(duracion<=0.0)
-    {
-        duracion=0.0;
-        activo=false;
+    duracion -= dt;
+    if (duracion <= 0.0) {
+        duracion = 0.0;
+        activo = false;
     }
 }
 
@@ -46,25 +38,12 @@ void efecto::activar(const QPointF& esquina_, double duracion_)
 {
     setEsquina(esquina_);
     setduracion(duracion_);
-    aviso = 0.0;
-    activo = true;
-}
-
-void efecto::activar(const QPointF& esquina_, double ancho_, double alto_,
-                     tipoefecto tipo_, double aviso_, double duracion_)
-{
-    setEsquina(esquina_);
-    setAncho(ancho_);
-    setAlto(alto_);
-    tipo = tipo_;
-    setaviso(aviso_);
-    setduracion(duracion_);
     activo = true;
 }
 
 bool efecto::aplicar(capitan& c)
 {
-    if (!activo || aviso > 0.0 || !contiene(c))
+    if (!activo || !contiene(c))
         return false;
     switch (tipo) {
     case gas:
@@ -98,15 +77,14 @@ bool efecto::aplicar(capitan& c)
 efecto::tipoefecto efecto::gettipo() const { return tipo; }
 double efecto::getduracion() const { return duracion; }
 double efecto::getfuerzarebote() const { return fuerzarebote; }
-double efecto::getaviso() const { return aviso; }
 bool efecto::getactivo() const { return activo; }
 void efecto::settipo(tipoefecto t) { tipo = t; }
 void efecto::setactivo(bool a) { activo = a; }
 void efecto::setduracion(double d)
 {
-    if (d <= 0.0 && esTemporal())
-        throw std::invalid_argument("pana si me vez es porque quieres colocar un efecto que dure 0 segundos todo bien?");
-    duracion = d;
+    if (d < 0.0)
+        throw std::invalid_argument("La duracion del efecto no puede ser negativa");
+    duracion = d;   // 0 = permanente
 }
 
 void efecto::setfuerzarebote(double f)
@@ -116,13 +94,6 @@ void efecto::setfuerzarebote(double f)
     fuerzarebote = f;
 }
 
-void efecto::setaviso(double a)
-{
-    if (a < 0.0)
-        throw std::invalid_argument("El aviso no puede ser negativo");
-    aviso = a;
-}
-
 efecto& efecto::operator=(const efecto& o)
 {
     if (this != &o) {
@@ -130,7 +101,6 @@ efecto& efecto::operator=(const efecto& o)
         tipo         = o.tipo;
         duracion     = o.duracion;
         fuerzarebote = o.fuerzarebote;
-        aviso        = o.aviso;
         activo       = o.activo;
     }
     return *this;
@@ -142,6 +112,5 @@ bool efecto::operator==(const efecto& o) const
     && tipo == o.tipo
                       && std::abs(duracion - o.duracion) <= datos::EPSILON
                       && std::abs(fuerzarebote - o.fuerzarebote) <= datos::EPSILON
-                      && std::abs(aviso - o.aviso) <= datos::EPSILON
                       && activo == o.activo;
 }

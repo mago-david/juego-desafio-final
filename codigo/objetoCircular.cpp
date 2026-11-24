@@ -3,6 +3,8 @@
 using namespace std;
 #include "datos.h"
 #include <cmath>
+objetoCircular::objetoCircular() : objetoCircular(QPointF(0,0), QPointF(0,0), 1.0, 1.0, true)
+{}
 
 objetoCircular::objetoCircular(const QPointF& pos, const QPointF& vel,
                                double masa_, double radio_, bool usaGravedad_)

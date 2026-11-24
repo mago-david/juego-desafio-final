@@ -13,12 +13,15 @@ public:
     muroPerseguidor(const QPointF& esquina_, double ancho_, double alto_,double velocidad_ = 60.0);
     muroPerseguidor(const muroPerseguidor& o);
     ~muroPerseguidor();
+    //accion
     void actualizar(double dt);
     bool aplicar(capitan& c)const;
+    //acceso
     double getvelocidad()const;
     bool getactivo()const;
     void setvelocidad(double v);
     void setactivo(bool a);
+    //operadores
     muroPerseguidor& operator=(const muroPerseguidor& o);
     bool operator==(const muroPerseguidor& o)const;
 };

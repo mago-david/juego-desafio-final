@@ -3,7 +3,9 @@
 #include "datos.h"
 #include <cmath>
 using namespace std;
-
+proyectil::proyectil() : proyectil(QPointF(0,0), QPointF(0,0),
+                1.0, 1.0, false, 0, 1.0)
+{}
 proyectil::proyectil(const QPointF& pos, const QPointF& vel, double masa_, double radio_,
                      bool usaGravedad_, int rebotes_, double coefRestitucion_)
     : objetoCircular(pos, vel, masa_, radio_, usaGravedad_),
@@ -12,7 +14,7 @@ proyectil::proyectil(const QPointF& pos, const QPointF& vel, double masa_, doubl
     setRebotesMax(rebotes_);
     setCoefRestitucion(coefRestitucion_);
 }
-
+proyectil::~proyectil() {}
 //reutilizar
 void proyectil::reiniciar(const QPointF& pos,const QPointF& vel, int rm)
 {

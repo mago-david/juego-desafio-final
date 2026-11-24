@@ -11,36 +11,41 @@ const double MASA_ESBIRRO  = 1.0;
 const double RADIO_ESBIRRO = 16.0;
 }
 
-esbirro::esbirro()
-    : objetoCircular(QPointF(0.0, 0.0), QPointF(0.0, 0.0), MASA_ESBIRRO, RADIO_ESBIRRO, false),
-    vida(0)
+esbirro::esbirro() : esbirro(QPointF(0.0, 0.0), 0) {}
+
+esbirro::esbirro(const QPointF& pos, int vida_)
+    : objetoCircular(pos, QPointF(0.0, 0.0), MASA_ESBIRRO, RADIO_ESBIRRO, false), vida(0)
+{ setVida(vida_); }
+
+esbirro::~esbirro()
 {}
 
-void esbirro::reiniciar(const QPointF& pos,int vida)
+//acciones
+void esbirro::reiniciar(const QPointF& pos, int vida_)
 {
     setPosicion(pos);
-    setVelocidad(QPointF(0.0,0.0));
-    setVida(vida);
+    setVelocidad(QPointF(0.0, 0.0));
+    setVida(vida_);
 }
 
 void esbirro::perseguir(const QPointF& objetivo)
 {
-    QPointF d=objetivo-posicion;
-    double n=hypot(d.x(),d.y());
-    if(n<1.0)
-        velocidad=QPointF(0.0,0.0);
+    QPointF d = objetivo - posicion;
+    double n = hypot(d.x(), d.y());
+    if (n < 1.0)
+        velocidad = QPointF(0.0, 0.0);
     else
-        velocidad=d*(VEL_ESBIRRO/n);
+        velocidad = d * (VEL_ESBIRRO / n);
 }
 
 void esbirro::recibirGolpe(int d)
 {
-    if(d>0)
-        vida=max(0,vida-d);
+    if (d > 0)
+        vida = max(0, vida - d);
 }
 
 bool esbirro::estaVivo() const
-{return vida>0;}
+{ return vida > 0; }
 
 //acceso
 int esbirro::getVida() const
@@ -66,20 +71,3 @@ bool esbirro::operator==(const esbirro& o) const
 {
     return objetoCircular::operator==(o) && vida == o.vida;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
