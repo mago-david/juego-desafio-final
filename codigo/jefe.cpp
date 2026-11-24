@@ -10,56 +10,60 @@ using namespace std;
 namespace
 {
 //generador sin qt y lo hacemos aqui para evitar recalcular todo el tiempo
-std::mt19937 generador(static_cast<unsigned>(
+    std::mt19937 generador(static_cast<unsigned>(
     std::chrono::steady_clock::now().time_since_epoch().count()));
-const QPointF CENTRO(datos::CENTRO_X, datos::CENTRO_Y);
+    const QPointF CENTRO(datos::CENTRO_X, datos::CENTRO_Y);
 
-const int NUM_MODOS = 3;
-const int NUM_ORIENTACIONES = 2;
-//tiempos
-const double T_RECARGA = 2.0;
-const double T_AVISO   = 1.0;
-const double T_DISPARO = 1.5;
-const double T_GAS     = 6.0;
-//chorros
-const double GROSOR_CHORRO = 35.0;
-const double FUERZA_CHORRO = 160.0;
-//lados para el cuadrante
-const double MITAD_ARENA = (datos::LADO_ARENA - 2.0 * datos::GROSOR_PARED) / 2.0;
-//balas
-const int    NUM_BALAS         = 3;
-const double INTERVALO_BALA    = 0.2;
-const double VEL_BALA          = 380.0;
-const double SEPARACION_FLANCO = 90.0;
-const double LADO_SENAL        = 30.0;
-const double MARGEN_BALA       = 15.0;
+    const int NUM_MODOS = 3;
+    const int NUM_ORIENTACIONES = 2;
+    //tiempos
+    const double T_RECARGA = 2.0;
+    const double T_AVISO = 1.0;
+    const double T_DISPARO = 1.5;
+    const double T_GAS = 6.0;
+    //chorros
+    const double GROSOR_CHORRO = 35.0;
+    const double FUERZA_CHORRO = 160.0;
+    //lados para el cuadrante
+    const double MITAD_ARENA = (datos::LADO_ARENA - 2.0 * datos::GROSOR_PARED) / 2.0;
+    //balas
+    const int    NUM_BALAS = 3;
+    const double INTERVALO_BALA = 0.2;
+    const double VEL_BALA = 380.0;
+    const double SEPARACION_FLANCO = 90.0;
+    const double LADO_SENAL = 30.0;
+    const double MARGEN_BALA = 15.0;
 
-//datos pa las bombas/lluvias
-const double CERCA = MITAD_ARENA / 4.0;
-const double LEJOS = 3.0 * MITAD_ARENA / 4.0;
-//posibles ubicaciones de las nubes
-const std::array<QPointF, 14> POS_LLUVIA = {{
-                                              {-LEJOS, -LEJOS},                                    {LEJOS, -LEJOS},   // arriba: el centro es el jefe
-                                              {-LEJOS, -CERCA}, {-CERCA, -CERCA}, {CERCA, -CERCA}, {LEJOS, -CERCA},
-                                              {-LEJOS,  CERCA}, {-CERCA,  CERCA}, {CERCA,  CERCA}, {LEJOS,  CERCA},
-                                              {-LEJOS,  LEJOS}, {-CERCA,  LEJOS}, {CERCA,  LEJOS}, {LEJOS,  LEJOS} }};
-const double LADO_NUBE = 70.0;
+    //datos pa las bombas/lluvias
+    const double CERCA = MITAD_ARENA / 4.0;
+    const double LEJOS = 3.0 * MITAD_ARENA / 4.0;
+    //posibles ubicaciones de las nubes
+    const std::array<QPointF, 14> POS_LLUVIA = {{
+                                {-LEJOS, -LEJOS},{LEJOS, -LEJOS},{-LEJOS, -CERCA}, {-CERCA, -CERCA},
+                                {CERCA, -CERCA}, {LEJOS, -CERCA}, {-LEJOS,  CERCA}, {-CERCA,  CERCA},
+                                {CERCA,  CERCA}, {LEJOS,  CERCA},{-LEJOS,  LEJOS}, {-CERCA,  LEJOS},
+                                {CERCA,  LEJOS}, {LEJOS,  LEJOS} }};
+    const double LADO_NUBE = 70.0;
 
-//ataque esquinas
-const int    NUM_ESQUINAS      = 4;
-const double INTERVALO_ESQUINA = 1;
-const double VEL_ESQUINA       = 245.0;
-const double ESPERA_ESQUINA    = 2.0;
+    //ataque esquinas
+    const int    NUM_ESQUINAS = 4;
+    const double INTERVALO_ESQUINA = 0.8;
+    const double VEL_ESQUINA = 245.0;
+    const double ESPERA_ESQUINA = 2.0;
 
-//cuerpo del jefe: el sprite entero es solido y recibe dano
-const obstaculo CUERPO(QPointF(datos::X_JEFE, datos::Y_JEFE), datos::ANCHO_JEFE, datos::ALTO_JEFE);
+    //cuerpo del jefe: el sprite entero es solido y recibe dano
+    const obstaculo CUERPO(QPointF(datos::X_JEFE, datos::Y_JEFE), datos::ANCHO_JEFE, datos::ALTO_JEFE);
 
-//fase dificil
-const int    LIMITE_ESBIRROS = 8;
-const int    VIDA_ESBIRRO    = 30;
-const double INTERVALO_CURA  = 0.3;
+    //fase dificil
+    const int    LIMITE_ESBIRROS = 8;
+    const int    VIDA_ESBIRRO = 30;
+    const double INTERVALO_CURA = 0.3;
+
+    //aprendizaje
+    const double ALFA = 0.3;
+    const double H_OBS= 0.6;
+    const double VEL_MIN_PRED = 20.0;
 }
-
 jefe::jefe() : jefe(1, false)
 {}
 
@@ -69,7 +73,8 @@ jefe::jefe(int vidaMax_, bool faseEsbirros_)
     ataqueActual(ataque::chorros), modoAtaque(modo::horizontal),
     balasLanzadas(0), objetivo(CENTRO), bombas{},
     T_esquina(ESPERA_ESQUINA), esquinaActual(cuadrante::noroeste),
-    faseEsbirros(faseEsbirros_), curaRestante(0), esbirrosLanzados(0)
+    faseEsbirros(faseEsbirros_), curaRestante(0), esbirrosLanzados(0), k(0.0),
+    posRef(CENTRO), velRef(0.0, 0.0), T_obs(H_OBS)
 {
     if (vidaMax_ <= 0)
         throw invalid_argument("La vida maxima del jefe debe ser mayor que cero");
@@ -126,10 +131,31 @@ void jefe::actuar(std::vector<efecto>& efectos, std::vector<proyectil>& balas)
     }
 }
 
-void jefe::actualizar(double dt, const QPointF& posJugador, std::vector<efecto>& efectos,
+void jefe::aprender(double dt,const QPointF& poscapi,const QPointF& vel)
+{
+    T_obs -= dt;
+    if (T_obs > 0.0)
+        return;
+    T_obs = H_OBS;
+
+    // comprobar: se movio en la direccion que velRef decia?
+    const double v2 = velRef.x() * velRef.x() + velRef.y() * velRef.y();
+    if (v2 > VEL_MIN_PRED * VEL_MIN_PRED)           // si estaba quieto no hay nada que comprobar
+    {
+        const QPointF real = poscapi - posRef;
+        const double razon = (real.x() * velRef.x() + real.y() * velRef.y()) / (H_OBS * v2);
+        k += ALFA * (max(0.0, min(1.0, razon)) - k);
+    }
+    // nueva foto para la siguiente comprobacion
+    posRef = poscapi;
+    velRef = vel;
+}
+
+void jefe::actualizar(double dt, const QPointF& posJugador,const QPointF& vel, std::vector<efecto>& efectos,
                       std::vector<proyectil>& balas,vector<esbirro>& esbirros)
 {
-    atacarDesdeEsquina(dt, posJugador, balas);
+    aprender(dt,posJugador,vel);
+    atacarDesdeEsquina(dt, posJugador,vel, balas);
     //dificil
     if(curaRestante>0)
     {
@@ -346,7 +372,8 @@ void jefe::atacarConLluvia(vector<efecto>& efectos)const
     }
 }
 
-void jefe::atacarDesdeEsquina(double dt,const QPointF& poscapi,vector<proyectil>& balas)
+void jefe::atacarDesdeEsquina(double dt,const QPointF& poscapi,const QPointF& vel,
+                              vector<proyectil>& balas)
 {
     T_esquina-=dt;
     if(T_esquina>0.0)
@@ -362,10 +389,21 @@ void jefe::atacarDesdeEsquina(double dt,const QPointF& poscapi,vector<proyectil>
     esquinaActual = static_cast<cuadrante>((static_cast<int>(esquinaActual) + 1) % NUM_ESQUINAS);
 
     //apunta al jugador
-    const QPointF d=poscapi-origen;
-    const double largo= hypot(d.x(),d.y());
+    QPointF d=poscapi-origen;
+    double largo= hypot(d.x(),d.y());
     if(largo<1.0)
         return;
+
+    QPointF meta=poscapi;
+
+    if (hypot(vel.x(), vel.y()) > VEL_MIN_PRED)
+        meta = poscapi + vel * (k * (largo / VEL_ESQUINA));   // adelanto aprendido
+
+    d=meta-origen;
+    largo=hypot(d.x(),d.y());
+    if(largo<1.0)
+        return;
+
     for(proyectil& b:balas)
     {
         if(b.estaActivo())
@@ -552,6 +590,29 @@ void jefe::setEsbirrosLanzados(int n)
     esbirrosLanzados = n;
 }
 
+double jefe::getK() const
+{ return k; }
+
+void jefe::setK(double v)
+{ k = max(0.0, min(1.0, v)); }
+
+const QPointF& jefe::getPosRef() const
+{ return posRef; }
+
+const QPointF& jefe::getVelRef() const
+{ return velRef; }
+
+double jefe::getT_obs() const
+{ return T_obs; }
+
+void jefe::setPosRef(const QPointF& p)
+{ posRef = p; }
+
+void jefe::setVelRef(const QPointF& v)
+{ velRef = v; }
+
+void jefe::setT_obs(double t)
+{ T_obs = t; }
 
 //operadores
 
@@ -572,6 +633,11 @@ jefe& jefe::operator=(const jefe& o)
         faseEsbirros = o.faseEsbirros;
         curaRestante = o.curaRestante;
         esbirrosLanzados = o.esbirrosLanzados;
+        k = o.k;
+        posRef = o.posRef;
+        velRef=o.velRef;
+        T_obs=o.T_obs;
+
     }
     return *this;
 }
@@ -584,12 +650,21 @@ bool jefe::operator==(const jefe& o) const
            && std::abs(T_fase - o.T_fase) <= datos::EPSILON
            && ataqueActual == o.ataqueActual
            && modoAtaque == o.modoAtaque
-           && bombas == o.bombas
+            && bombas == o.bombas
            && balasLanzadas == o.balasLanzadas
            && objetivo == o.objetivo
            && std::abs(T_esquina - o.T_esquina) <= datos::EPSILON
            && esquinaActual == o.esquinaActual
            && faseEsbirros == o.faseEsbirros
            && curaRestante == o.curaRestante
-           && esbirrosLanzados == o.esbirrosLanzados;
+           && esbirrosLanzados == o.esbirrosLanzados
+           && esbirrosLanzados == o.esbirrosLanzados
+           && std::abs(k - o.k) <= datos::EPSILON
+           && posRef == o.posRef
+           && velRef == o.velRef
+           && std::abs(T_obs - o.T_obs) <= datos::EPSILON;
 }
+
+
+
+

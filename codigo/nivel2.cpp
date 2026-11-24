@@ -1,22 +1,17 @@
 #include "nivel2.h"
 #include "datos.h"
 #include <stdexcept>
-#include <cstdlib>
-#include <QDebug>
 
 namespace
 {
-const double DY_INICIO      = 180.0;   // el capi empieza debajo del jefe
-const int    VIDA_JEFE      = 300;     // escala x10: el escudo hace 10 (15 fortachon)
-const int    N_EFECTOS      = 16;      // peor caso: 7 nubes vivas + 7 señales de otra lluvia
-const int    N_BALAS        = 10;
-const double MASA_BALA      = 1.0;     // la base exige > 0
-const double RADIO_BALA     = 6.0;     // <= MARGEN_BALA de jefe.cpp
-const int    N_ESBIRROS     = 4;       // tanda viva a la vez
-const double INTERVALO_BUFO = 30.0;
-const double DURACION_BUFO  = 10.0;
-const double LADO_BUFO      = 28.0;
-const bool   DIFICIL        = true;
+const double DY_INICIO  = 180.0;   // el capi empieza debajo del jefe
+const int    VIDA_JEFE  = 525;     // escala x10: el escudo hace 10 (15 fortachon)
+const int    N_EFECTOS  = 16;      // peor caso: 7 nubes vivas + 7 señales de otra lluvia
+const int    N_BALAS    = 10;
+const double MASA_BALA  = 1.0;     // la base exige > 0
+const double RADIO_BALA = 6.0;     // <= MARGEN_BALA de jefe.cpp
+const int    N_ESBIRROS = 4;       // tanda viva a la vez
+const bool   DIFICIL    = true;
 }
 
 nivel2::nivel2(bool dificil, bool fortachon)
@@ -63,6 +58,8 @@ void nivel2::actualizar(double dt)
 
     personaje.resolverParedes(paredes);
 
+    jefeFinal.actualizar(dt,personaje.getPosicion(),personaje.getVelocidad(),
+                         efectos,balas,esbirros);
     jefeFinal.actualizar(dt,personaje.getPosicion(),efectos,balas,esbirros);
 
     actualizarBalas(dt);
