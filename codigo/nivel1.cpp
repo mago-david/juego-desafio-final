@@ -33,6 +33,7 @@ const double ESPERA_ATAQUE      = 3.0;   // s entre el ultimo disparo y el ataqu
 const double ANCHO_NUBE    = 150.0;
 const double ALTO_NUBE     = 100.0;
 const double DURACION_NUBE = 3.0;
+
 }
 
 nivel1::nivel1(int vidas_)
@@ -41,7 +42,7 @@ nivel1::nivel1(int vidas_)
     anchoMapa(ANCHO_NIVEL1), muro(QPointF(0.0, 0.0), 40.0, Y_SUELO, VEL_MURO)
 {
     construirMapa();
-    construirProy();
+    //construirProy();
     construirBufos();
     const QPointF inicio(100.0, Y_SUELO - personaje.getRadio());
     personaje.setPosicion(inicio);
@@ -57,24 +58,27 @@ void nivel1::construirMapa()
 {
     plataformas.clear();
     manifestantes.clear();
+    plataformas.reserve(24);
+    manifestantes.reserve(8);
     const double s = Y_SUELO;
 
     // Limites del mapa (ANCHO_NIVEL1 = 6800.0)
+    plataformas.emplace_back(QPointF(s,0.0),anchoMapa,60,false,7);
     plataformas.emplace_back(QPointF(0.0, s),          anchoMapa, 60.0,     false, 7); // suelo
     plataformas.emplace_back(QPointF(-30.0, 0.0),      30.0,      s + 60.0, false, 0); // pared izquierda
     plataformas.emplace_back(QPointF(anchoMapa, 0.0),  30.0,      s + 60.0, false, 0); // pared derecha
 
     // parte 1
-    plataformas.emplace_back(QPointF(150.0, s - 95.0),  180.0, 95.0,  false, 1); // bloque gris inicial
-    plataformas.emplace_back(QPointF(230.0, s - 220.0), 140.0, 22.0,  true,  4); // plataforma azul 1
+    plataformas.emplace_back(QPointF(150.0, s - 95.0),  180.0, 95.0,  false, 1); // carro del inicio
+    plataformas.emplace_back(QPointF(230.0, s - 210.0), 140.0, 22.0,  true,  4); // plataforma azul 1
     manifestantes.emplace_back(QPointF(330.0, s - 90.0), 320.0, 90.0, efecto::danio, 0.0);
-    plataformas.emplace_back(QPointF(430.0, s - 320.0), 190.0, 22.0,  true,  5); // plataforma media-alta
+    plataformas.emplace_back(QPointF(430.0, s - 310.0), 190.0, 22.0,  true,  5); // plataforma media-alta
     plataformas.emplace_back(QPointF(650.0, s - 230.0), 60.0,  230.0, false, 7); // 1er muro vertical
 
     // parte 2
     manifestantes.emplace_back(QPointF(710.0, s - 90.0), 640.0, 90.0, efecto::danio, 0.0);
     plataformas.emplace_back(QPointF(740.0,  s - 150.0), 130.0, 22.0,  true,  4); // ruta baja 1
-    plataformas.emplace_back(QPointF(760.0,  s - 410.0), 140.0, 22.0,  true,  4); // ruta aerea alta
+    plataformas.emplace_back(QPointF(760.0,  s - 360.0), 140.0, 22.0,  true,  4); // ruta aerea alta
     plataformas.emplace_back(QPointF(930.0,  s - 270.0), 200.0, 22.0,  true,  5); // central (1er bufo)
     plataformas.emplace_back(QPointF(1080.0, s - 150.0), 130.0, 22.0,  true,  4); // ruta baja 2
     plataformas.emplace_back(QPointF(1160.0, s - 360.0), 200.0, 22.0,  true,  5); // alta hacia 2do muro
@@ -83,18 +87,18 @@ void nivel1::construirMapa()
     // parte 3
     plataformas.emplace_back(QPointF(1500.0, s - 290.0), 190.0, 22.0,  true,  5);
     plataformas.emplace_back(QPointF(1620.0, s - 110.0), 240.0, 110.0, false, 2); // bus verde
-    plataformas.emplace_back(QPointF(1800.0, s - 440.0), 150.0, 22.0,  true,  4); // techo alto
+    plataformas.emplace_back(QPointF(1800.0, s - 360.0), 150.0, 22.0,  true,  4); // techo alto
     manifestantes.emplace_back(QPointF(1860.0, s - 90.0), 250.0, 90.0, efecto::danio, 0.0);
     plataformas.emplace_back(QPointF(1920.0, s - 210.0), 130.0, 22.0,  true,  4); // escalon al muro torre
 
     // parte 4
     plataformas.emplace_back(QPointF(2110.0, s - 310.0), 75.0,  310.0, false, 7); // 3er muro torre
-    plataformas.emplace_back(QPointF(2180.0, s - 410.0), 210.0, 22.0,  true,  5); // pasarela alta
+    //plataformas.emplace_back(QPointF(2180.0, s - 410.0), 210.0, 22.0,  true,  5); // pasarela alta
     plataformas.emplace_back(QPointF(2260.0, s - 160.0), 140.0, 22.0,  true,  4);
     manifestantes.emplace_back(QPointF(2280.0, s - 90.0), 240.0, 90.0, efecto::danio, 0.0);
     plataformas.emplace_back(QPointF(2540.0, s - 105.0), 200.0, 105.0, false, 1); // vehiculo gris
-    plataformas.emplace_back(QPointF(2640.0, s - 260.0), 160.0, 22.0,  true,  4); // salto medio
-    plataformas.emplace_back(QPointF(2820.0, s - 390.0), 190.0, 22.0,  true,  5); // plataforma alta
+    plataformas.emplace_back(QPointF(2640.0, s - 250.0), 160.0, 22.0,  true,  4); // salto medio
+    plataformas.emplace_back(QPointF(2820.0, s - 370.0), 190.0, 22.0,  true,  5); // plataforma alta
 
     // parte 5
     plataformas.emplace_back(QPointF(3030.0, s - 210.0), 55.0,  210.0, false, 7); // muro medio
@@ -136,10 +140,11 @@ void nivel1::construirMapa()
 void nivel1::construirBufos()
 {
     bufos.clear();
+    bufos.reserve(2);
     const double s = Y_SUELO;
-    bufos.emplace_back(QPointF(1015.0, s - 315.0), 30.0, 30.0, efecto::bufo, 5.0); // parte 2 en plataforma central
+    //bufos.emplace_back(QPointF(1015.0, s - 315.0), 30.0, 30.0, efecto::bufo, 5.0); // parte 2 en plataforma central
     bufos.emplace_back(QPointF(3380.0, s - 495.0), 30.0, 30.0, efecto::bufo, 5.0); // parte 5 en cima alta
-    bufos.emplace_back(QPointF(5305.0, s - 515.0), 30.0, 30.0, efecto::bufo, 5.0); // parte 7 en cumbre maxima
+    //bufos.emplace_back(QPointF(5305.0, s - 515.0), 30.0, 30.0, efecto::bufo, 5.0); // parte 7 en cumbre maxima
     bufos.emplace_back(QPointF(6175.0, s - 215.0), 30.0, 30.0, efecto::bufo, 5.0); // parte 8 impulso final
 }
 
@@ -180,7 +185,7 @@ void nivel1::actualizar(double dt)
 
     const double limiteIzq = muro.getDerecha();
 
-    lanzarProyectiles(dt);
+    //lanzarProyectiles(dt);
     personaje.setEnNube(false);
     for (efecto& n : nubes) {
         if (!n.getactivo())
@@ -212,7 +217,7 @@ void nivel1::actualizar(double dt)
     }
     personaje.actualizar(dt);
     personaje.resolverPlataformas(plataformas);
-    actualizarProyectiles(dt);
+    //actualizarProyectiles(dt);
 }
 
 //ataques proyectiles
