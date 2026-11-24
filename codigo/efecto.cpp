@@ -1,5 +1,6 @@
 #include "efecto.h"
 #include "datos.h"
+#include "capitanN2.h"
 #include <stdexcept>
 #include <cmath>
 
@@ -69,11 +70,17 @@ bool efecto::aplicar(capitan& c)
     case gas:
         c.setEnNube(true);
         return true;
-    case bufo:
+    case bufo: {
         c.ganarVida();
-        c.setT_veloz(duracion);
+        capitanN2* capN2 = dynamic_cast<capitanN2*>(&c);
+        if (capN2 != nullptr) {
+            capN2->activarBufoDanio(duracion);
+        } else {
+            c.setT_veloz(duracion);
+        }
         activo = false;
         return true;
+    }
     case danio: {
         if (!c.recibirDanio())
             return false;

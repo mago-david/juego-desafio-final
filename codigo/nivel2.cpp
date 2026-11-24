@@ -1,6 +1,7 @@
 #include "nivel2.h"
 #include "datos.h"
 #include <stdexcept>
+#include <cstdlib>
 #include <QDebug>
 
 namespace
@@ -12,12 +13,15 @@ const int    N_BALAS    = 10;
 const double MASA_BALA  = 1.0;     // la base exige > 0
 const double RADIO_BALA = 6.0;     // <= MARGEN_BALA de jefe.cpp
 const int    N_ESBIRROS = 4;       // tanda viva a la vez
+const double INTERVALO_BUFO = 30.0;
+const double DURACION_BUFO  = 10.0;
+const double LADO_BUFO      = 28.0;
 const bool   DIFICIL    = true;
 }
 
 nivel2::nivel2()
     : personaje(QPointF(datos::CENTRO_X, datos::CENTRO_Y + DY_INICIO)),
-    jefeFinal(VIDA_JEFE, DIFICIL), efectos(N_EFECTOS), balas(), esbirros(N_ESBIRROS)
+    jefeFinal(VIDA_JEFE, DIFICIL), efectos(N_EFECTOS), balas(), esbirros(N_ESBIRROS),tiempoBufo(0.0)
 {
     construirArena();
     construirBalas();
@@ -59,6 +63,11 @@ void nivel2::actualizar(double dt)
     actualizarBalas(dt);
     actualizarEfectos(dt);
     actualizarEsbirros(dt);
+    tiempoBufo += dt;
+    if (tiempoBufo >= INTERVALO_BUFO) {
+        tiempoBufo -= INTERVALO_BUFO;
+        generarBufoAleatorio();
+    }
 }
 
 void nivel2::actualizarBalas(double dt)
@@ -83,13 +92,48 @@ void nivel2::actualizarBalas(double dt)
     }
 }
 
+void nivel2::generarBufoAleatorio()
+{
+    efecto* slotLibre = nullptr;
+    for (size_t i = 0; i < efectos.size(); ++i) {
+        if (!efectos[i].getactivo()) {
+            slotLibre = &efectos[i];
+            break;
+        }
+    }
+    if (!slotLibre)
+        return;
+
+    const double g = datos::GROSOR_PARED;
+    const double minX = datos::X_ARENA + g + 16.0;
+    const double maxX = datos::X_ARENA + datos::LADO_ARENA - g - LADO_BUFO - 16.0;
+    const double minY = g + 16.0;
+    const double maxY = datos::LADO_ARENA - g - LADO_BUFO - 16.0;
+
+    if (maxX <= minX || maxY <= minY)
+        return;
+
+    const double rx = double(std::rand()) / double(RAND_MAX);
+    const double ry = double(std::rand()) / double(RAND_MAX);
+    const QPointF esquina(minX + rx * (maxX - minX), minY + ry * (maxY - minY));
+    const zona candidata(esquina, LADO_BUFO, LADO_BUFO);
+    const obstaculo& cuerpoJefe = jefeFinal.getCuerpo();
+    const bool solapaJefe = !(candidata.getDerecha() <= cuerpoJefe.getIzquierda() ||
+                              candidata.getIzquierda() >= cuerpoJefe.getDerecha() ||
+                              candidata.getAbajo() <= cuerpoJefe.getArriba() ||
+                              candidata.getArriba() >= cuerpoJefe.getAbajo());
+    if (solapaJefe)
+        return;
+
+    slotLibre->activar(esquina, LADO_BUFO, LADO_BUFO, efecto::bufo, 0.0, DURACION_BUFO);
+}
+
 void nivel2::actualizarEfectos(double dt)
 {
     personaje.setEnNube(false);
-    for(efecto& e:efectos)
-    {
-        e.actualizar(dt);
-        e.aplicar(personaje);
+    for (size_t i = 0; i < efectos.size(); ++i) {
+        efectos[i].actualizar(dt);
+        efectos[i].aplicar(personaje);
     }
 }
 

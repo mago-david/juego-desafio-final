@@ -157,9 +157,17 @@ bool capitanN2::getFortachon() const
 void capitanN2::setFortachon(bool f)
 { fortachon = f; }
 
+double capitanN2::getTFortachon() const
+{ return tFortachon; }
+
+void capitanN2::activarBufoDanio(double duracionSeg)
+{
+    fortachon = true;
+    tFortachon = max(tFortachon, duracionSeg);
+}
 
 int capitanN2::getDanioEscudo() const
-{ return fortachon ? DANIO_FORTACHON : DANIO_ESCUDO; }
+{ return (fortachon && tFortachon > 0.0) ? DANIO_FORTACHON : DANIO_ESCUDO; }
 
 // Operadores
 capitanN2& capitanN2::operator=(const capitanN2& o) {

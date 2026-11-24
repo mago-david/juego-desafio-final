@@ -5,7 +5,7 @@
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent), vista(nullptr), nivelActual(1)
 {
-    cargarNivel(1);
+    cargarNivel(2);
 }
 void MainWindow::cargarNivel(int numeroNivel)
 {

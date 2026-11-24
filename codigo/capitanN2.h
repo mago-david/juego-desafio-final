@@ -12,21 +12,20 @@ private:
     double tRecarga;
     std::vector<proyectil> escudos;
     bool fortachon;
+    double tFortachon;
 public:
     explicit capitanN2(const QPointF& pos, int vidas_ = datos::VIDAS_INICIALES,bool fortachon=false);
     capitanN2(const capitanN2& o) = default;
     //movimiento,recarga y movimiento de los escudos
     void actualizar(double dt);
-
     //ataque
     bool lanzarEscudo(const QPointF& objetivo);
-    //coques
+    //choques
     void resolverParedes(const std::vector<obstaculo>& paredes);
-    //rebote de escudo contra objetoscirculares(enemigos balas)
+    //rebote de escudo contra balas enemigas
     int escudosGolpean(const objetoCircular& blanco);
-    //ataque contra obstaculo( el jefe)
+    //ataque contra jefe
     int escudosGolpean(const obstaculo& blanco);
-
     //acceso
     int getDireccionX() const;
     int getDireccionY() const;
@@ -38,8 +37,9 @@ public:
     void setEscudos(const std::vector<proyectil>& e);
     bool getFortachon() const;
     void setFortachon(bool f);
-
+    double getTFortachon() const;
     int getDanioEscudo() const;
+    void activarBufoDanio(double duracionSeg = 10.0);
 
     //operadores
     capitanN2& operator=(const capitanN2& o);
