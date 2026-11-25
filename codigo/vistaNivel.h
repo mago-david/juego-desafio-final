@@ -50,8 +50,7 @@ private:
     QSoundEffect* sonidoGolpe2;
     QSoundEffect* sonidoMuerte;
     QSoundEffect* sonidoBufo;
-    QSoundEffect* sonidoGameOver;
-    QSoundEffect* sonidoVictoria;
+    QSoundEffect* sonidoGolpeJefe;
     int turnoGolpe;
 
 private slots:
@@ -103,8 +102,7 @@ protected:
     void reproducirDanio();
     void reproducirMuerte();
     void reproducirBufo();
-    void reproducirGameOver();
-    void reproducirVictoria();
+    void reproducirGolpeJefe();
 
 public:
     void iniciar();

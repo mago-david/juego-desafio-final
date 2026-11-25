@@ -30,7 +30,7 @@ vistaN2::vistaN2(QWidget* parent)
     nivel(), dibujoPersonaje(nullptr), dibujoJefe(nullptr),barraJefeFondo(nullptr),barraJefeRelleno(nullptr),
     barraJefeBorde(nullptr),efectoCuracionJefe(nullptr),ultimaDirX(0), ultimaDirY(1), tiempoAnimacion(0.0),tiempoLanzando(0.0),
     vidasPrevias(nivel.getPersonaje().getVidas()),
-    jefeEstabaVivo(nivel.getJefe().estaVivo()),
+    jefeEstabaVivo(nivel.getJefe().estaVivo()),vidaJefePrevia(nivel.getJefe().getVida()),
     fortachonPrevio(nivel.getPersonaje().getFortachon() && nivel.getPersonaje().getTFortachon() > 0.0),
     teclaW(false), teclaA(false), teclaS(false), teclaD(false)
 {
@@ -50,6 +50,7 @@ vistaN2::vistaN2(QWidget* parent)
     crearHumos();
     crearAguas();
     crearEsbirros();
+
 }
 
 QVector<QPixmap> vistaN2::cargarListaFrames(const QString& carpeta, const QVector<int>& indices, double escala)
@@ -595,14 +596,17 @@ void vistaN2::avanzarLogica(double dt)
     const bool jefeVivo = nivel.getJefe().estaVivo();
     if (jefeEstabaVivo && !jefeVivo) {
         jefeEstabaVivo = false;
-        reproducirVictoria();
         terminar(true);
         return;
     }
     if (!cap.estaVivo()) {
-        reproducirGameOver();
         terminar(false);
     }
+    const int vidaJefeActual = nivel.getJefe().getVida();
+    if (vidaJefeActual < vidaJefePrevia) {
+        reproducirGolpeJefe();
+    }
+    vidaJefePrevia = vidaJefeActual;
 }
 
 void vistaN2::dibujar(double)

@@ -33,8 +33,6 @@ vistaNivel::vistaNivel(QWidget* parent)
     sonidoGolpe2(nullptr),
     sonidoMuerte(nullptr),
     sonidoBufo(nullptr),
-    sonidoGameOver(nullptr),
-    sonidoVictoria(nullptr),
     turnoGolpe(0),
     escena(new QGraphicsScene(this))
 {
@@ -59,6 +57,7 @@ vistaNivel::vistaNivel(QWidget* parent)
     connect(relojMuerte, &QTimer::timeout, this, &vistaNivel::actualizarFundidoMuerte);
 
     const qreal volumenEfectos = 0.8;
+    const qreal volumenGolpejefe= 0.35;
     sonidoGolpe1 = new QSoundEffect(this);
     sonidoGolpe1->setSource(QUrl(QStringLiteral("qrc:/capitan/sonidos_danio/1.wav")));
     sonidoGolpe1->setVolume(volumenEfectos);
@@ -75,13 +74,9 @@ vistaNivel::vistaNivel(QWidget* parent)
     sonidoBufo->setSource(QUrl(QStringLiteral("qrc:/capitan/bufo/bufo.wav")));
     sonidoBufo->setVolume(volumenEfectos);
 
-    sonidoGameOver = new QSoundEffect(this);
-    sonidoGameOver->setSource(QUrl(QStringLiteral("qrc:/sonidos/gameover.wav")));
-    sonidoGameOver->setVolume(volumenEfectos);
-
-    sonidoVictoria = new QSoundEffect(this);
-    sonidoVictoria->setSource(QUrl(QStringLiteral("qrc:/sonidos/victoria.wav")));
-    sonidoVictoria->setVolume(volumenEfectos);
+    sonidoGolpeJefe= new QSoundEffect(this);
+    sonidoGolpeJefe->setSource(QStringLiteral("qrc:/capitan/sonidos_danio/4.wav"));
+    sonidoGolpeJefe->setVolume(volumenGolpejefe);
 }
 
 void vistaNivel::setUltimoNivel(bool ultimo)
@@ -481,15 +476,9 @@ void vistaNivel::reproducirBufo()
         sonidoBufo->play();
     }
 }
-void vistaNivel::reproducirGameOver()
+void vistaNivel::reproducirGolpeJefe()
 {
-    if (sonidoGameOver && sonidoGameOver->status() != QSoundEffect::Error) {
-        sonidoGameOver->play();
-    }
-}
-void vistaNivel::reproducirVictoria()
-{
-    if (sonidoVictoria && sonidoVictoria->status() != QSoundEffect::Error) {
-        sonidoVictoria->play();
+    if (sonidoGolpeJefe && sonidoGolpeJefe->status() != QSoundEffect::Error) {
+        sonidoGolpeJefe->play();
     }
 }
