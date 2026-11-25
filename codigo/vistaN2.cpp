@@ -16,6 +16,8 @@
 #include "jefe.h"
 #include "proyectil.h"
 #include <QGraphicsColorizeEffect>
+#include <QMediaPlayer>
+#include <QMediaPlaylist>
 
 namespace
 {
@@ -28,7 +30,8 @@ const double FPS_ANIMACION        = 10.0;
 vistaN2::vistaN2(bool dificultad, QWidget* parent)
     : vistaNivel(parent),
     nivel(dificultad), dibujoPersonaje(nullptr), dibujoJefe(nullptr),barraJefeFondo(nullptr),barraJefeRelleno(nullptr),
-    barraJefeBorde(nullptr),efectoCuracionJefe(nullptr),ultimaDirX(0), ultimaDirY(1), tiempoAnimacion(0.0),tiempoLanzando(0.0),
+    barraJefeBorde(nullptr),efectoCuracionJefe(nullptr),reproductorJefe(nullptr),
+    salidaAudioJefe(nullptr),ultimaDirX(0), ultimaDirY(1), tiempoAnimacion(0.0),tiempoLanzando(0.0),
     vidasPrevias(nivel.getPersonaje().getVidas()),
     jefeEstabaVivo(nivel.getJefe().estaVivo()),vidaJefePrevia(nivel.getJefe().getVida()),
     fortachonPrevio(nivel.getPersonaje().getFortachon() && nivel.getPersonaje().getTFortachon() > 0.0),
@@ -50,6 +53,14 @@ vistaN2::vistaN2(bool dificultad, QWidget* parent)
     crearHumos();
     crearAguas();
     crearEsbirros();
+    reproductorJefe = new QMediaPlayer(this);
+    reproductorJefe = new QMediaPlayer(this);
+    QMediaPlaylist* lista = new QMediaPlaylist(reproductorJefe);
+    lista->addMedia(QUrl(QStringLiteral("qrc:/capitan/sonidos_fondo/2.mp3")));
+    lista->setPlaybackMode(QMediaPlaylist::Loop);
+    reproductorJefe->setPlaylist(lista);
+    reproductorJefe->setVolume(45);   // en Qt 5 es un entero de 0 a 100
+    reproductorJefe->play();
 
 }
 
@@ -593,21 +604,24 @@ void vistaN2::avanzarLogica(double dt)
     }
     fortachonPrevio = fortachonAhora;
 
+    const int vidaJefeActual = nivel.getJefe().getVida();
+    if (vidaJefeActual < vidaJefePrevia)
+        reproducirGolpeJefe();
+    vidaJefePrevia = vidaJefeActual;
+
     const bool jefeVivo = nivel.getJefe().estaVivo();
     if (jefeEstabaVivo && !jefeVivo) {
         jefeEstabaVivo = false;
+        reproductorJefe->stop();
         terminar(true);
         return;
     }
     if (!cap.estaVivo()) {
+        reproductorJefe->stop();
         terminar(false);
     }
-    const int vidaJefeActual = nivel.getJefe().getVida();
-    if (vidaJefeActual < vidaJefePrevia) {
-        reproducirGolpeJefe();
-    }
-    vidaJefePrevia = vidaJefeActual;
 }
+
 
 void vistaN2::dibujar(double)
 {

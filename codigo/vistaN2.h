@@ -11,6 +11,8 @@ class QGraphicsRectItem;
 class QGraphicsPixmapItem;
 class QGraphicsColorizeEffect;
 class QMouseEvent;
+class QMediaPlayer;
+class QAudioOutput;
 
 class vistaN2 : public vistaNivel
 {
@@ -30,6 +32,8 @@ private:
     QGraphicsRectItem* barraJefeRelleno;
     QGraphicsRectItem* barraJefeBorde;
     QGraphicsColorizeEffect* efectoCuracionJefe;
+    QMediaPlayer* reproductorJefe;
+    QAudioOutput* salidaAudioJefe;
     // Sprites Capitán N2
     QPixmap spriteAbajoQuieto;
     QVector<QPixmap> framesAbajoCaminar;
