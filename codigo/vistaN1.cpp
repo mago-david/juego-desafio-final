@@ -5,19 +5,18 @@
 #include <QGraphicsEllipseItem>
 #include <QGraphicsPixmapItem>
 #include <QGraphicsColorizeEffect>
-#include <QImage>// recortar las imagenes
-#include <QTransform> // transformaciones; scale(-1, 1) voltea el sprite al mirar a la izquierda
+#include <QTransform>
 #include <QBrush>
-#include <QPen> // borde de las figuras (Qt::NoPen = sin borde)
-#include <QPainter>
-#include <QDebug>
+#include <QPen>
+#include <algorithm>
 #include <cmath>
-using namespace std;
+
 vistaN1::vistaN1(QWidget* parent)
     : vistaNivel(parent),
-    nivel(),dibujoPersonaje(nullptr),dibujoSprite(nullptr),
-    efectoDanio(nullptr),teclaA(false),teclaD(false),
-    estadoAnim(QUIETO),tAnim(0.0),mirandoIzq(false),dibujoMuro(nullptr)
+    nivel(), dibujoPersonaje(nullptr), dibujoSprite(nullptr),
+    efectoDanio(nullptr), teclaA(false), teclaD(false),
+    estadoAnim(QUIETO), tAnim(0.0), mirandoIzq(false),
+    muroIniciado(false), dibujoMuro(nullptr)
 {
     escena->setSceneRect(0.0, 0.0, nivel.getAnchoMapa(), datos::ALTO_ESCENA);
     cargarSprites();
@@ -25,18 +24,18 @@ vistaN1::vistaN1(QWidget* parent)
     dibujarMapa();
     dibujarPersonaje();
     dibujarHUD(nivel.getPersonaje().getVidasMax());
+
     dibujoMuro = escena->addRect(0.0, 0.0, 1.0, datos::ALTO_ESCENA,
                                  QPen(Qt::NoPen), QBrush(Qt::black));
     dibujoMuro->setZValue(15);
-    //proyectiles
-    //  voltear disparo hacia la izquierda
+
+    // Proyectiles
     QPixmap spriteBala = prepararFrame(":/capitan/danio/1.png", 1.0);
     if (!spriteBala.isNull()) {
         spriteBala = spriteBala.scaledToHeight(12, Qt::SmoothTransformation)
         .transformed(QTransform().scale(-1, 1));
     }
 
-    // voltear lacrimogena a la izquierda
     QPixmap spriteLacri = prepararFrame(":/capitan/danio/2.png", 1.0);
     if (!spriteLacri.isNull()) {
         spriteLacri = spriteLacri.scaledToHeight(20, Qt::SmoothTransformation)
@@ -53,6 +52,7 @@ vistaN1::vistaN1(QWidget* parent)
     crearNubes();
     crearBufos();
 }
+
 void vistaN1::agregarCapa(const QString& ruta, double factor, int z)
 {
     QPixmap img(ruta);
@@ -60,10 +60,9 @@ void vistaN1::agregarCapa(const QString& ruta, double factor, int z)
         return;
     img = img.scaledToHeight(int(datos::ALTO_ESCENA), Qt::SmoothTransformation);
 
-    // Ancho que debe cubrir la capa: la pantalla mas lo que se desplaza
     const double recorrido = (nivel.getAnchoMapa() - datos::ANCHO_ESCENA) * factor;
     const double cubrir = datos::ANCHO_ESCENA + recorrido;
-    // Item vacio que contiene los trozos repetidos de la imagen
+
     QGraphicsPixmapItem* base = escena->addPixmap(QPixmap());
     base->setZValue(z);
     for (int x = 0; x < int(cubrir) + img.width(); x += img.width()) {
@@ -73,9 +72,9 @@ void vistaN1::agregarCapa(const QString& ruta, double factor, int z)
     capasItem.append(base);
     capasFactor.append(factor);
 }
+
 void vistaN1::actualizarFondo(const QPointF& pos)
 {
-    // Borde izquierdo de la camara, sin salirse del mapa
     double izq = pos.x() - datos::ANCHO_ESCENA / 2.0;
     if (izq < 0.0)
         izq = 0.0;
@@ -85,14 +84,13 @@ void vistaN1::actualizarFondo(const QPointF& pos)
     for (int i = 0; i < capasItem.size(); ++i)
         capasItem[i]->setPos(izq * (1.0 - capasFactor[i]), 0.0);
 }
+
 void vistaN1::dibujarFondo()
 {
-    // Tres capas con distinta velocidad: la lejana se mueve poco, la cercana mas
-    agregarCapa(":/capitan/fondo/1.png",  0.2, -30);   // fondo
-    agregarCapa(":/capitan/medio/2.png",  0.5, -20);   // medio
-    agregarCapa(":/capitan/frente/3.png", 0.8, -10);   // frente
+    agregarCapa(":/capitan/fondo/1.png",  0.2, -30);
+    agregarCapa(":/capitan/medio/2.png",  0.5, -20);
+    agregarCapa(":/capitan/frente/3.png", 0.8, -10);
 }
-
 
 void vistaN1::dibujarMapa()
 {
@@ -103,11 +101,10 @@ void vistaN1::dibujarMapa()
     for (const obstaculo& o : nivel.getPlataformas()) {
         const int id = o.getSpriteId();
         if (id <= 0 || id > 8 || tex[id].isNull())
-            continue; // paredes invisibles
+            continue;
         if (id == 7 && o.getAncho() > o.getAlto() * 2)
-            continue; // suelo invisible para que solo se vea el fondo
+            continue;
 
-        // Vehículos, plataformas aéreas y muros verticales
         QPixmap esc = tex[id].scaled(int(o.getAncho()), int(o.getAlto()),
                                      Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
         QGraphicsPixmapItem* item = escena->addPixmap(esc);
@@ -115,7 +112,6 @@ void vistaN1::dibujarMapa()
         item->setZValue(o.getAtravesable() ? 6 : 8);
     }
 
-    // Dibujar zonas de manifestantes
     if (!tex[8].isNull()) {
         for (const efecto& m : nivel.getManifestantes()) {
             QPixmap esc = tex[8].scaled(int(m.getAncho()), int(m.getAlto()),
@@ -130,13 +126,11 @@ void vistaN1::dibujarMapa()
 void vistaN1::dibujarPersonaje()
 {
     const double r = nivel.getPersonaje().getRadio();
-    //HIT BOX SE GENERA EN 0.0 Y SE POSICIONA EN EL CENTRO DEL CAPITAN (este no se ve pero juan si es neseario verlo cambia el qpn a qt::red)
-    dibujoPersonaje = escena->addEllipse(-r, -r, 2.0 * r, 2.0 * r,QPen(Qt::NoPen), QBrush(Qt::NoBrush));
+    dibujoPersonaje = escena->addEllipse(-r, -r, 2.0 * r, 2.0 * r, QPen(Qt::NoPen), QBrush(Qt::NoBrush));
     dibujoPersonaje->setPos(nivel.getPersonaje().getPosicion());
-    //Z=5 encima del fondo(-10)/plataforma(-5)
     dibujoPersonaje->setZValue(5);
+
     dibujoSprite = new QGraphicsPixmapItem(dibujoPersonaje);
-    // Tinte rojo para el golpe; se activa solo unos instantes
     efectoDanio = new QGraphicsColorizeEffect();
     efectoDanio->setColor(Qt::red);
     efectoDanio->setStrength(0.8);
@@ -147,7 +141,6 @@ void vistaN1::dibujarPersonaje()
 
 void vistaN1::cargarSprites()
 {
-    // Una sola escala para todos los frames, calculada con "quieto" como referencia, para que el personaje no cambie de tamano entre animaciones
     QPixmap ref = prepararFrame(":/capitan/quieto/1.png", 1.0);
     const double escala = ref.isNull() ? 1.0 : 64.0 / ref.height();
 
@@ -162,8 +155,6 @@ void vistaN1::cargarSprites()
         for (const QPixmap& f : animaciones[e])
             animacionesIzq[e].append(f.transformed(QTransform().scale(-1, 1)));
     }
-
-    qDebug() << "frames quieto:" << animaciones[QUIETO].size();   // debe decir 5
 }
 
 void vistaN1::actualizarSprite()
@@ -171,7 +162,6 @@ void vistaN1::actualizarSprite()
     const capitanN1& c = nivel.getPersonaje();
     const double vx = std::abs(c.getVelocidad().x());
 
-    //  elegir animacion segun la fisica (en el aire, agachado, velocidad)
     Estado nuevo;
     if (!c.getEnSuelo())
         nuevo = SALTO;
@@ -184,20 +174,19 @@ void vistaN1::actualizarSprite()
     else
         nuevo = QUIETO;
 
-    // recordar hacia donde mira (solo cambia si hay tecla presionada)
     if (c.getDireccion() != 0)
         mirandoIzq = (c.getDireccion() < 0);
 
-    // reiniciar el tiempo si cambio de animacion
     if (nuevo != estadoAnim) {
         estadoAnim = nuevo;
         tAnim = 0.0;
     }
     tAnim += datos::DT;
+
     const QVector<QPixmap>& frames = mirandoIzq ? animacionesIzq[estadoAnim] : animaciones[estadoAnim];
     if (frames.isEmpty() || !dibujoSprite)
         return;
-    //Escoger el frame: el salto usa la velocidad vertical, el resto avanza con el tiempo
+
     int idx;
     if (estadoAnim == SALTO) {
         const double vy = c.getVelocidad().y();
@@ -206,12 +195,11 @@ void vistaN1::actualizarSprite()
     } else {
         idx = int(tAnim * 10.0) % frames.size();
     }
-    //Voltear la imagen si mira a la izquierda
-   const QPixmap& p = frames[idx];
-    //Centrar en x y apoyar los pies en la base del circulo
+
+    const QPixmap& p = frames[idx];
     dibujoSprite->setPixmap(p);
     dibujoSprite->setPos(-p.width() / 2.0, c.getRadio() - p.height());
-    // Invulnerabilidad: parpadeo
+
     const double inv = c.getT_invulnerable();
     if (inv > 0.0) {
         dibujoSprite->setVisible(int(inv * 10.0) % 2 == 0);
@@ -245,11 +233,9 @@ void vistaN1::avanzarLogica(double dt)
 
 void vistaN1::dibujar(double a)
 {
-    //el a es para evitar que la logica y la pantalla tengan diferencia de frames
     const capitanN1& c = nivel.getPersonaje();
     const QPointF pos = c.getPosicionAnterior() + (c.getPosicion() - c.getPosicionAnterior()) * a;
 
-    // la camara sigue al jugador sin importar que el muro avance
     const double maxCamIzq = nivel.getAnchoMapa() - datos::ANCHO_ESCENA;
     double camIzq = pos.x() - datos::ANCHO_ESCENA / 2.0;
     if (camIzq < 0.0) {
@@ -258,6 +244,7 @@ void vistaN1::dibujar(double a)
         camIzq = maxCamIzq;
     }
     const double centroCamX = camIzq + datos::ANCHO_ESCENA / 2.0;
+
     dibujoPersonaje->setPos(pos);
     actualizarSprite();
     actualizarFondo(QPointF(centroCamX, pos.y()));
@@ -265,8 +252,9 @@ void vistaN1::dibujar(double a)
     dibujarPool(nivel.getLacrimogenas(), dibujoLacrimogenas, true);
     actualizarNubes();
     actualizarBufos();
+
     const double derMuro = nivel.getMuro().getDerecha();
-    const double izqMuro = camIzq; // borde izquierdo actual de la cámara
+    const double izqMuro = camIzq;
     if (dibujoMuro) {
         if (derMuro > izqMuro) {
             dibujoMuro->setVisible(true);
@@ -275,12 +263,16 @@ void vistaN1::dibujar(double a)
         } else {
             dibujoMuro->setVisible(false);
         }
+    }
+
     centerOn(centroCamX, datos::ALTO_ESCENA / 2.0);
     actualizarHUD(nivel.getPersonaje().getVidas());
 }
-}
+
 void vistaN1::actualizarDireccion()
-{nivel.setDireccionPersonaje((teclaD ? 1 : 0) - (teclaA ? 1 : 0));}
+{
+    nivel.setDireccionPersonaje((teclaD ? 1 : 0) - (teclaA ? 1 : 0));
+}
 
 void vistaN1::alPulsar(int tecla)
 {
@@ -292,6 +284,10 @@ void vistaN1::alPulsar(int tecla)
     case Qt::Key_D:
         teclaD = true;
         actualizarDireccion();
+        if (!muroIniciado) {
+            muroIniciado = true;
+            nivel.setMuroActivo(true);
+        }
         break;
     case Qt::Key_Space:
         nivel.saltar();
@@ -299,34 +295,33 @@ void vistaN1::alPulsar(int tecla)
     case Qt::Key_Shift:
         nivel.bajarPlataforma();
         break;
-    default: break;
-    }
-}
-void vistaN1::alSoltar(int tecla) {
-    switch (tecla) {
-    case Qt::Key_A:
-        teclaA = false;
-        actualizarDireccion(); break;
-    case Qt::Key_D:
-        teclaD = false;
-        actualizarDireccion(); break;
-    default: break;
+    default:
+        break;
     }
 }
 
-void vistaN1::alPerderFoco() {
+void vistaN1::alSoltar(int tecla)
+{
+    switch (tecla) {
+    case Qt::Key_A:
+        teclaA = false;
+        actualizarDireccion();
+        break;
+    case Qt::Key_D:
+        teclaD = false;
+        actualizarDireccion();
+        break;
+    default:
+        break;
+    }
+}
+
+void vistaN1::alPerderFoco()
+{
     teclaA = false;
     teclaD = false;
     actualizarDireccion();
 }
-
-
-const nivel1& vistaN1::getNivel() const
-{ return nivel; }
-bool vistaN1::getTeclaA() const
-{ return teclaA; }
-bool vistaN1::getTeclaD() const
-{ return teclaD; }
 
 void vistaN1::crearNubes()
 {
@@ -335,7 +330,7 @@ void vistaN1::crearNubes()
     for (size_t i = 0; i < nubes.size(); ++i)
     {
         QGraphicsPixmapItem* it = escena->addPixmap(QPixmap());
-        it->setZValue(6); // por encima del capitán (Z=5) para envolverlo en humo
+        it->setZValue(6);
         it->setVisible(false);
         dibujoNubes.append(it);
     }
@@ -346,7 +341,7 @@ void vistaN1::actualizarNubes()
     if (framesGas.isEmpty())
         return;
     const std::vector<efecto>& nubes = nivel.getNubes();
-    const double duracionTotal = 3.0; // misma DURACION_NUBE de nivel1.cpp
+    const double duracionTotal = 3.0;
     for (int i = 0; i < int(nubes.size()); ++i)
     {
         const bool activo = nubes[i].getactivo();
@@ -364,6 +359,7 @@ void vistaN1::actualizarNubes()
                                centroY - frame.height() / 2.0);
     }
 }
+
 void vistaN1::crearBufos()
 {
     const std::vector<efecto>& bufos = nivel.getBufos();
@@ -379,6 +375,7 @@ void vistaN1::crearBufos()
         dibujoBufos.append(it);
     }
 }
+
 void vistaN1::actualizarBufos()
 {
     const std::vector<efecto>& bufos = nivel.getBufos();
