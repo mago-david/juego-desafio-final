@@ -15,6 +15,7 @@ MainWindow::MainWindow(QWidget* parent)
     paginaMenu(nullptr),
     paginaTutorialN1(nullptr),
     paginaTutorialN2(nullptr),
+    paginaSelectorNiveles(nullptr),
     vista(nullptr),
     nivelActual(1),
     dificultadActual(Normal)
@@ -33,11 +34,13 @@ MainWindow::MainWindow(QWidget* parent)
         "* Golpea al jefe, esquiva sus proyectiles y elimina los esbirros.\n"
         "* Recoge el bufo 'Fortachón' para aumentar el daño de tu escudo y recuperar vida."
         );
+    paginaSelectorNiveles = crearPantallaSelectorNiveles();
+
     pilaVistas->addWidget(paginaMenu);
     pilaVistas->addWidget(paginaTutorialN1);
     pilaVistas->addWidget(paginaTutorialN2);
+    pilaVistas->addWidget(paginaSelectorNiveles);
     pilaVistas->setCurrentWidget(paginaMenu);
-    setWindowTitle("Menú Principal");
 }
 QWidget* MainWindow::crearMenuPrincipal()
 {//menu principal creacion completa
@@ -143,20 +146,56 @@ void MainWindow::abrirTutorialN2()
     setWindowTitle("Tutorial - Nivel 2");
     pilaVistas->setCurrentWidget(paginaTutorialN2);
 }
+//selector de nivel
+QWidget* MainWindow::crearPantallaSelectorNiveles()
+{
+    QWidget* panel = new QWidget(this);
+    QVBoxLayout* layout = new QVBoxLayout(panel);
+    layout->setAlignment(Qt::AlignCenter);
+    layout->setSpacing(14);
+
+    QLabel* lblTitulo = new QLabel("SELECCIONAR NIVEL", panel);
+    lblTitulo->setStyleSheet("font-size: 28px; font-weight: bold; color: white;");
+    lblTitulo->setAlignment(Qt::AlignCenter);
+
+    QPushButton* btnNivel1 = new QPushButton("Nivel 1", panel);
+    QPushButton* btnNivel2 = new QPushButton("Nivel 2", panel);
+    QPushButton* btnVolver = new QPushButton("Volver al menú", panel);
+
+    const QString estiloBtn =
+        "QPushButton {"
+        "  min-width: 250px;"
+        "  min-height: 44px;"
+        "  font-size: 16px;"
+        "  font-weight: bold;"
+        "  background-color: #242630;"
+        "  color: white;"
+        "  border: 2px solid #7c859e;"
+        "  border-radius: 6px;"
+        "}"
+        "QPushButton:hover { background-color: #363a4a; border-color: white; }";
+
+    btnNivel1->setStyleSheet(estiloBtn);
+    btnNivel2->setStyleSheet(estiloBtn);
+    btnVolver->setStyleSheet(estiloBtn);
+
+    connect(btnNivel1, &QPushButton::clicked, this, [this]() { cargarNivel(1); });
+    connect(btnNivel2, &QPushButton::clicked, this, [this]() { cargarNivel(2); });
+    connect(btnVolver, &QPushButton::clicked, this, &MainWindow::abrirMenu);
+
+    layout->addWidget(lblTitulo);
+    layout->addWidget(btnNivel1);
+    layout->addWidget(btnNivel2);
+    layout->addWidget(btnVolver);
+
+    panel->setStyleSheet("background-color: #121318;");
+    return panel;
+}
+
 void MainWindow::abrirSelectorNiveles()
 {
-    QMessageBox selector(this);
-    selector.setWindowTitle("Selector de niveles");
-    selector.setText("Selecciona un nivel:");
-    QPushButton* btnN1 = selector.addButton("Nivel 1", QMessageBox::AcceptRole);
-    QPushButton* btnN2 = selector.addButton("Nivel 2", QMessageBox::AcceptRole);
-    selector.addButton("Cancelar", QMessageBox::RejectRole);
-    selector.exec();
-    if (selector.clickedButton() == btnN1) {
-        cargarNivel(1);
-    } else if (selector.clickedButton() == btnN2) {
-        cargarNivel(2);
-    }
+    setWindowTitle("Seleccionar nivel");
+    pilaVistas->setCurrentWidget(paginaSelectorNiveles);
 }
 void MainWindow::cargarNivel(int numeroNivel)
 {
@@ -181,6 +220,7 @@ void MainWindow::cargarNivel(int numeroNivel)
     pilaVistas->setCurrentWidget(vista);
     vista->iniciar();
 }
+
 void MainWindow::reiniciarNivel()
 {
     cargarNivel(nivelActual);

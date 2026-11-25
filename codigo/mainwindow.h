@@ -22,12 +22,14 @@ private:
     QWidget* paginaMenu;
     QWidget* paginaTutorialN1;
     QWidget* paginaTutorialN2;
+    QWidget* paginaSelectorNiveles;
     vistaNivel* vista;
     int nivelActual;
     Dificultad dificultadActual;
 
     QWidget* crearMenuPrincipal();
     QWidget* crearPantallaTutorial(const QString& titulo, const QString& contenido);
+    QWidget* crearPantallaSelectorNiveles();
     void cargarNivel(int numeroNivel);
 
 private slots:
