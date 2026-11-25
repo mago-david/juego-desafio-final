@@ -17,8 +17,7 @@
 #include "proyectil.h"
 #include <QGraphicsColorizeEffect>
 #include <QMediaPlayer>
-#include <QMediaPlaylist>
-
+#include <QAudioOutput>
 namespace
 {
 const QColor COLOR_SENAL(255, 220, 0, 110);
@@ -54,12 +53,11 @@ vistaN2::vistaN2(bool dificultad, QWidget* parent)
     crearAguas();
     crearEsbirros();
     reproductorJefe = new QMediaPlayer(this);
-    reproductorJefe = new QMediaPlayer(this);
-    QMediaPlaylist* lista = new QMediaPlaylist(reproductorJefe);
-    lista->addMedia(QUrl(QStringLiteral("qrc:/capitan/sonidos_fondo/2.mp3")));
-    lista->setPlaybackMode(QMediaPlaylist::Loop);
-    reproductorJefe->setPlaylist(lista);
-    reproductorJefe->setVolume(45);   // en Qt 5 es un entero de 0 a 100
+    salidaAudioJefe = new QAudioOutput(this);
+    reproductorJefe->setAudioOutput(salidaAudioJefe);
+    reproductorJefe->setSource(QUrl(QStringLiteral("qrc:/capitan/sonidos_fondo/2.mp3")));
+    reproductorJefe->setLoops(QMediaPlayer::Infinite);
+    salidaAudioJefe->setVolume(0.45f);
     reproductorJefe->play();
 
 }

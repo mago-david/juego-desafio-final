@@ -57,7 +57,7 @@ vistaNivel::vistaNivel(QWidget* parent)
     connect(relojMuerte, &QTimer::timeout, this, &vistaNivel::actualizarFundidoMuerte);
 
     const qreal volumenEfectos = 0.8;
-    const qreal volumenGolpejefe= 0.35;
+    const qreal volumenGolpejefe= 0.25;
     sonidoGolpe1 = new QSoundEffect(this);
     sonidoGolpe1->setSource(QUrl(QStringLiteral("qrc:/capitan/sonidos_danio/1.wav")));
     sonidoGolpe1->setVolume(volumenEfectos);
