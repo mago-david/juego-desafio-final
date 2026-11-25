@@ -25,13 +25,14 @@ const double DURACION_ANIM_LANZAR = 0.25;
 const double FPS_ANIMACION        = 10.0;
 }
 
-vistaN2::vistaN2(QWidget* parent)
+vistaN2::vistaN2(bool dificultad, QWidget* parent)
     : vistaNivel(parent),
-    nivel(), dibujoPersonaje(nullptr), dibujoJefe(nullptr), textoVidas(nullptr),
+    nivel(dificultad), dibujoPersonaje(nullptr), dibujoJefe(nullptr), textoVidas(nullptr),
     ultimaDirX(0), ultimaDirY(1), tiempoAnimacion(0.0), tiempoLanzando(0.0),
     vidasPrevias(nivel.getPersonaje().getVidas()),
     jefeEstabaVivo(nivel.getJefe().estaVivo()),
-    fortachonPrevio(nivel.getPersonaje().getFortachon() && nivel.getPersonaje().getTFortachon() > 0.0)
+    fortachonPrevio(nivel.getPersonaje().getFortachon() && nivel.getPersonaje().getTFortachon() > 0.0),
+    teclaW(false),teclaA(false),teclaS(false),teclaD(false)
 {
     escena->setSceneRect(0.0, 0.0, datos::ANCHO_ESCENA, datos::ALTO_ESCENA);
     setBackgroundBrush(Qt::black);

@@ -10,23 +10,23 @@ namespace
 const double ANCHO_NIVEL1 = 6800.0;        // ~60 s de recorrido
 const double VEL_MURO     = 95.0;          // px/s
 const double Y_SUELO      = 550.0;
-// ---- Proyectiles (placeholders: ajustar jugando) ----
-const double DX_DISPARO     = 450.0;   // donde nacen respecto al capitan: mas de media pantalla (400), fuera de vista
-const double VEL_PROYECTIL  = 300.0;   // px/s hacia la izquierda; igual para balas y lacrimogenas
-const double MASA_PROYECTIL = 1.0;     // la base exige > 0; no interviene en la fisica actual
+// Proyectiles
+const double DX_DISPARO     = 450.0;   // donde nacen respecto al capitan
+const double VEL_PROYECTIL  = 300.0;   // px/s hacia la izquierda
+const double MASA_PROYECTIL = 1.0;
 const double RADIO_PROYECTIL = 6.0;    // px; tambien decide si "nace dentro de un obstaculo"
 const int    LACRIMOGENA_REBOTES = 3;  // rebotes que sobrevive
 const double LACRIMOGENA_E       = 0.9;// restitucion: choque inelastico (pierde energia)
-const int    N_BALAS         = 10;     // tamano del pool = maximo de balas vivas a la vez
-const int    N_LACRIMOGENAS  = 5;      // idem
+const int    N_BALAS         = 10;     // maximo de balas vivas a la vez
+const int    N_LACRIMOGENAS  = 5;
 
-// ---- Ataques ----
+//  Ataques
 const int    N_ALTURAS          = 10;    // lugares desde donde se puede disparar
 const double ALTURA_MIN         = 110.0; // y del lugar mas alto
 const double PASO_ALTURA        = 45.0;  // separacion entre lugares (el mas bajo queda en 515)
 const int    ALTURAS_POR_ATAQUE = 5;     // cuantos lugares usa cada ataque (los mas cercanos al jugador)
-const int    BALAS_POR_ATAQUE   = 4;     // debe ser <= N_BALAS
-const int    LACRIS_POR_ATAQUE  = 3;     // debe ser <= N_LACRIMOGENAS
+const int    BALAS_POR_ATAQUE   = 4;
+const int    LACRIS_POR_ATAQUE  = 3;
 const double INTERVALO_DISPARO  = 0.55;  // s entre disparos de un mismo ataque
 const double ESPERA_ATAQUE      = 3.0;   // s entre el ultimo disparo y el ataque siguiente (tambien el primero)
 
@@ -42,7 +42,7 @@ nivel1::nivel1(int vidas_)
     anchoMapa(ANCHO_NIVEL1), muro(QPointF(0.0, 0.0), 40.0, Y_SUELO, VEL_MURO)
 {
     construirMapa();
-    //construirProy();
+    construirProy();
     construirBufos();
     const QPointF inicio(100.0, Y_SUELO - personaje.getRadio());
     personaje.setPosicion(inicio);
@@ -185,7 +185,7 @@ void nivel1::actualizar(double dt)
 
     const double limiteIzq = muro.getDerecha();
 
-    //lanzarProyectiles(dt);
+    lanzarProyectiles(dt);
     personaje.setEnNube(false);
     for (efecto& n : nubes) {
         if (!n.getactivo())
@@ -217,7 +217,7 @@ void nivel1::actualizar(double dt)
     }
     personaje.actualizar(dt);
     personaje.resolverPlataformas(plataformas);
-    //actualizarProyectiles(dt);
+    actualizarProyectiles(dt);
 }
 
 //ataques proyectiles

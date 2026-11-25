@@ -46,7 +46,6 @@ private:
     void crearBufos();
     void actualizarBufos();
     //muro
-    bool muroIniciado;
     QGraphicsRectItem* dibujoMuro;
 protected:
     void avanzarLogica(double dt) override;

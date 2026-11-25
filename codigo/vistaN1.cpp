@@ -17,7 +17,7 @@ vistaN1::vistaN1(QWidget* parent)
     : vistaNivel(parent),
     nivel(),dibujoPersonaje(nullptr),dibujoSprite(nullptr),
     efectoDanio(nullptr),teclaA(false),teclaD(false),
-    estadoAnim(QUIETO),tAnim(0.0),mirandoIzq(false),muroIniciado(false),dibujoMuro(nullptr)
+    estadoAnim(QUIETO),tAnim(0.0),mirandoIzq(false),dibujoMuro(nullptr)
 {
     escena->setSceneRect(0.0, 0.0, nivel.getAnchoMapa(), datos::ALTO_ESCENA);
     cargarSprites();
@@ -292,10 +292,6 @@ void vistaN1::alPulsar(int tecla)
     case Qt::Key_D:
         teclaD = true;
         actualizarDireccion();
-        if (!muroIniciado) {
-            muroIniciado = true;
-            nivel.setMuroActivo(true);
-        }
         break;
     case Qt::Key_Space:
         nivel.saltar();

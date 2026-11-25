@@ -88,7 +88,7 @@ protected:
     void alPerderFoco() override;
     void mousePressEvent(QMouseEvent* e) override;
 public:
-    explicit vistaN2(QWidget* parent = nullptr);
+    explicit vistaN2(bool dificultad, QWidget* parent = nullptr);
     const nivel2& getNivel() const;
     bool getTeclaW() const;
     bool getTeclaA() const;
