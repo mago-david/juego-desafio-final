@@ -21,6 +21,8 @@ private:
     QVector<QGraphicsPixmapItem*> dibujoBalas;
     QVector<QGraphicsRectItem*> dibujoEfectos;
     QVector<QGraphicsPixmapItem*> dibujoBufos;
+    QVector<QGraphicsPixmapItem*> dibujoHumos;
+    QVector<QGraphicsPixmapItem*> dibujoAguas;
     QVector<QGraphicsPixmapItem*> dibujoEsbirros;
     QGraphicsSimpleTextItem* textoVidas;
 
@@ -44,6 +46,8 @@ private:
     QPixmap spriteEscudo;
     QPixmap spriteBala;
     QPixmap spriteBufo;
+    QVector<QPixmap> framesHumo;
+    QVector<QPixmap> framesAgua;
 
     // Sprites Arena / Jefe / Esbirros (capitan2/jefe/1..5.png)
     QPixmap spritePiso;
@@ -76,6 +80,10 @@ private:
     void dibujarEfectos();
     void crearBufos();
     void dibujarBufos();
+    void crearHumos();
+    void dibujarHumos();
+    void crearAguas();
+    void dibujarAguas();
     void crearEsbirros();
     void dibujarEsbirros();
     void actualizarDireccion();

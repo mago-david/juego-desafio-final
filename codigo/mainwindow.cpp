@@ -96,7 +96,7 @@ QWidget* MainWindow::crearMenuPrincipal()
     panel->setStyleSheet("background-color: #121318;");
     return panel;
 }
-QWidget* MainWindow::crearPantallaTutorial(const QString& titulo, const QString& contenido)
+QWidget* MainWindow::crearPantallaTutorial(const QString& titulo, const QString& contenido)//definir como se va a ver el menu de tutorial
 {
     QWidget* panel = new QWidget(this);
     QVBoxLayout* layout = new QVBoxLayout(panel);
