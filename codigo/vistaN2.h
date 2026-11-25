@@ -1,15 +1,13 @@
 #ifndef VISTAN2_H
 #define VISTAN2_H
-
 #include <QVector>
 #include <QPixmap>
-#include <QSize>
 #include "vistaNivel.h"
 #include "nivel2.h"
 
 class QGraphicsRectItem;
 class QGraphicsPixmapItem;
-class QGraphicsColorizeEffect;
+class QGraphicsSimpleTextItem;
 class QMouseEvent;
 
 class vistaN2 : public vistaNivel
@@ -23,13 +21,9 @@ private:
     QVector<QGraphicsPixmapItem*> dibujoBalas;
     QVector<QGraphicsRectItem*> dibujoEfectos;
     QVector<QGraphicsPixmapItem*> dibujoBufos;
-    QVector<QGraphicsPixmapItem*> dibujoHumos;
-    QVector<QGraphicsPixmapItem*> dibujoAguas;
     QVector<QGraphicsPixmapItem*> dibujoEsbirros;
-    QGraphicsRectItem* barraJefeFondo;
-    QGraphicsRectItem* barraJefeRelleno;
-    QGraphicsRectItem* barraJefeBorde;
-    QGraphicsColorizeEffect* efectoCuracionJefe;
+    QGraphicsSimpleTextItem* textoVidas;
+
     // Sprites Capitán N2
     QPixmap spriteAbajoQuieto;
     QVector<QPixmap> framesAbajoCaminar;
@@ -50,14 +44,6 @@ private:
     QPixmap spriteEscudo;
     QPixmap spriteBala;
     QPixmap spriteBufo;
-    QVector<QPixmap> framesHumo;
-    QVector<QPixmap> framesAgua;
-
-    // Caché para evitar escalar/tilear en cada frame
-    QVector<QPixmap> cacheHumos;
-    QSize tamCacheHumo;
-    QVector<QPixmap> cacheAguas;
-    QSize tamCacheAgua;
 
     // Sprites Arena / Jefe / Esbirros (capitan2/jefe/1..5.png)
     QPixmap spritePiso;
@@ -90,17 +76,10 @@ private:
     void dibujarEfectos();
     void crearBufos();
     void dibujarBufos();
-    void crearHumos();
-    void dibujarHumos();
-    void crearAguas();
-    void dibujarAguas();
     void crearEsbirros();
     void dibujarEsbirros();
     void actualizarDireccion();
-    void crearBarraJefe();
-    void actualizarBarraJefe();
     const QPixmap& elegirFrameCapitan() const;
-
 protected:
     void avanzarLogica(double dt) override;
     void dibujar(double alfa) override;
@@ -108,9 +87,13 @@ protected:
     void alSoltar(int tecla) override;
     void alPerderFoco() override;
     void mousePressEvent(QMouseEvent* e) override;
-
 public:
-    explicit vistaN2(QWidget* parent = nullptr);
+    explicit vistaN2(bool dificultad, QWidget* parent = nullptr);
+    const nivel2& getNivel() const;
+    bool getTeclaW() const;
+    bool getTeclaA() const;
+    bool getTeclaS() const;
+    bool getTeclaD() const;
 };
 
 #endif // VISTAN2_H
