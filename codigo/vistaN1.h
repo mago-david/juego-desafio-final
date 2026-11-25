@@ -41,7 +41,6 @@ private:
     QVector<QGraphicsPixmapItem*> dibujoBufos;
 
     // Muro
-    bool muroIniciado;
     QGraphicsRectItem* dibujoMuro;
 
     void dibujarFondo();
@@ -66,6 +65,9 @@ protected:
 
 public:
     explicit vistaN1(QWidget* parent = nullptr);
+    const nivel1& getNivel() const;
+    bool getTeclaA() const;
+    bool getTeclaD() const;
 };
 
 #endif // VISTAN1_H

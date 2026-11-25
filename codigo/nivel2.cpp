@@ -1,25 +1,30 @@
 #include "nivel2.h"
 #include "datos.h"
+#include <random>
 #include <stdexcept>
 
 namespace
 {
 const double DY_INICIO  = 180.0;   // el capi empieza debajo del jefe
-const int    VIDA_JEFE  = 525;     // escala x10: el escudo hace 10 (15 fortachon)
+const int    VIDA_JEFE_NORMAL  = 400;   // escala x10: el escudo hace 10 (15 fortachon)
+const int    VIDA_JEFE_DIFICIL = 525;
 const int    N_EFECTOS  = 16;      // peor caso: 7 nubes vivas + 7 señales de otra lluvia
 const int    N_BALAS    = 10;
 const double MASA_BALA  = 1.0;     // la base exige > 0
 const double RADIO_BALA = 6.0;     // <= MARGEN_BALA de jefe.cpp
-const int    N_ESBIRROS = 4;       // tanda viva a la vez
+const int    N_ESBIRROS = 4;       // tanda viva a la vez (solo en dificil)
 const double INTERVALO_BUFO = 30.0;
 const double DURACION_BUFO  = 10.0;
 const double LADO_BUFO      = 28.0;
 const bool   DIFICIL    = true;
 }
 
+// dificil: jefe con mas vida y fase de esbirros/cura (reserva de esbirros viva).
+// normal: jefe con menos vida, sin esbirros y sin fase de cura.
 nivel2::nivel2(bool dificil, bool fortachon)
     : personaje(QPointF(datos::CENTRO_X, datos::CENTRO_Y + DY_INICIO), datos::VIDAS_INICIALES, fortachon),
-    jefeFinal(VIDA_JEFE, dificil), efectos(N_EFECTOS), balas(), esbirros(N_ESBIRROS), tiempoBufo(0.0)
+    jefeFinal(dificil ? VIDA_JEFE_DIFICIL : VIDA_JEFE_NORMAL, dificil),
+    efectos(N_EFECTOS), balas(), esbirros(dificil ? N_ESBIRROS : 0), tiempoBufo(0.0)
 {
     construirArena();
     construirBalas();
@@ -117,8 +122,10 @@ void nivel2::generarBufoAleatorio()
     if (maxX <= minX || maxY <= minY)
         return;
 
-    const double rx = double(std::rand()) / double(RAND_MAX);
-    const double ry = double(std::rand()) / double(RAND_MAX);
+    // mismo mt19937 que usa el jefe (sembrado con el reloj) en lugar de std::rand
+    std::uniform_real_distribution<double> unif(0.0, 1.0);
+    const double rx = unif(datos::generador);
+    const double ry = unif(datos::generador);
     const QPointF esquina(minX + rx * (maxX - minX), minY + ry * (maxY - minY));
     const zona candidata(esquina, LADO_BUFO, LADO_BUFO);
     const obstaculo& cuerpoJefe = jefeFinal.getCuerpo();

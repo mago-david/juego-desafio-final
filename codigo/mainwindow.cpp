@@ -235,7 +235,7 @@ void MainWindow::cargarNivel(int numeroNivel)
         vista = new vistaN1(this);
     } else {
         setWindowTitle("Nivel 2");
-        vista = new vistaN2(this);
+        vista = new vistaN2(dificultadActual == Dificil, this);
     }
     connect(vista, &vistaNivel::solicitarReintento,      this, &MainWindow::reiniciarNivel);
     connect(vista, &vistaNivel::solicitarMenu,           this, &MainWindow::abrirMenu);

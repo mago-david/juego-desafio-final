@@ -1,5 +1,6 @@
 #ifndef DATOS_H
 #define DATOS_H
+#include <random>
 namespace datos {
 
 //Escenario
@@ -38,5 +39,7 @@ const int NUM_COMBOS = 3;
 const int NUM_ATAQUES=3;
 //bomberman
 const int NUM_BOMBAS = 6;
+//generador mt19937 compartido (se define en jefe.cpp y se reutiliza en nivel2)
+extern std::mt19937 generador;
 }
 #endif // DATOS_H

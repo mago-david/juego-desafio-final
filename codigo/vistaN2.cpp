@@ -25,9 +25,9 @@ const double DURACION_ANIM_LANZAR = 0.25;
 const double FPS_ANIMACION        = 10.0;
 }
 
-vistaN2::vistaN2(QWidget* parent)
+vistaN2::vistaN2(bool dificultad, QWidget* parent)
     : vistaNivel(parent),
-    nivel(), dibujoPersonaje(nullptr), dibujoJefe(nullptr),barraJefeFondo(nullptr),barraJefeRelleno(nullptr),
+    nivel(dificultad), dibujoPersonaje(nullptr), dibujoJefe(nullptr),barraJefeFondo(nullptr),barraJefeRelleno(nullptr),
     barraJefeBorde(nullptr),efectoCuracionJefe(nullptr),ultimaDirX(0), ultimaDirY(1), tiempoAnimacion(0.0),tiempoLanzando(0.0),
     vidasPrevias(nivel.getPersonaje().getVidas()),
     jefeEstabaVivo(nivel.getJefe().estaVivo()),vidaJefePrevia(nivel.getJefe().getVida()),
@@ -336,7 +336,7 @@ void vistaN2::actualizarBarraJefe()
     const jefe& j = nivel.getJefe();
     const double vidaActual = std::max(0.0, double(j.getVida()));
     const double vidaMax    = std::max(1.0, double(j.getVidaMax()));
-    const double proporcion = std::clamp(vidaActual / vidaMax, 0.0, 1.0);
+    const double proporcion = std::min(1.0, vidaActual / vidaMax);
     const QRectF rectBase = barraJefeBorde->rect();
     barraJefeRelleno->setRect(rectBase.x(), rectBase.y(),
                               rectBase.width() * proporcion, rectBase.height());
@@ -682,3 +682,18 @@ void vistaN2::mousePressEvent(QMouseEvent* e)
         vistaNivel::mousePressEvent(e);
     }
 }
+
+const nivel2& vistaN2::getNivel() const
+{ return nivel; }
+
+bool vistaN2::getTeclaW() const
+{ return teclaW; }
+
+bool vistaN2::getTeclaA() const
+{ return teclaA; }
+
+bool vistaN2::getTeclaS() const
+{ return teclaS; }
+
+bool vistaN2::getTeclaD() const
+{ return teclaD; }

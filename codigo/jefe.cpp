@@ -7,11 +7,14 @@
 #include <stdexcept>
 #include <numeric>
 using namespace std;
+
+//generador unico del proyecto (declarado en datos.h): sin qt y se crea una sola vez
+std::mt19937 datos::generador(static_cast<unsigned>(
+    std::chrono::steady_clock::now().time_since_epoch().count()));
+
 namespace
 {
-//generador sin qt y lo hacemos aqui para evitar recalcular todo el tiempo
-    std::mt19937 generador(static_cast<unsigned>(
-    std::chrono::steady_clock::now().time_since_epoch().count()));
+    std::mt19937& generador = datos::generador;
     const QPointF CENTRO(datos::CENTRO_X, datos::CENTRO_Y);
 
     const int NUM_MODOS = 3;
@@ -61,7 +64,7 @@ namespace
 
     //aprendizaje
     const double ALFA = 0.3;
-    const double H_OBS= 0.6;
+    const double H_OBS= 1.2;
     const double VEL_MIN_PRED = 20.0;
 }
 jefe::jefe() : jefe(1, false)
@@ -650,7 +653,7 @@ bool jefe::operator==(const jefe& o) const
            && std::abs(T_fase - o.T_fase) <= datos::EPSILON
            && ataqueActual == o.ataqueActual
            && modoAtaque == o.modoAtaque
-            && bombas == o.bombas
+           && bombas == o.bombas
            && balasLanzadas == o.balasLanzadas
            && objetivo == o.objetivo
            && std::abs(T_esquina - o.T_esquina) <= datos::EPSILON
@@ -658,13 +661,8 @@ bool jefe::operator==(const jefe& o) const
            && faseEsbirros == o.faseEsbirros
            && curaRestante == o.curaRestante
            && esbirrosLanzados == o.esbirrosLanzados
-           && esbirrosLanzados == o.esbirrosLanzados
            && std::abs(k - o.k) <= datos::EPSILON
            && posRef == o.posRef
            && velRef == o.velRef
            && std::abs(T_obs - o.T_obs) <= datos::EPSILON;
 }
-
-
-
-

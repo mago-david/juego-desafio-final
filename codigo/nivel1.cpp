@@ -7,26 +7,27 @@ using namespace std;
 
 namespace
 {
-const double ANCHO_NIVEL1 = 6800.0;        // ~60 s de recorrido
-const double VEL_MURO     = 95.0;          // px/s
+const double ANCHO_NIVEL1 = 11250.0;        // ~60 s de recorrido
+const double VEL_MURO     = 160.0;          // px/s
+const double X_ACTIVARMURO = 400.0;
 const double Y_SUELO      = 550.0;
-// Proyectiles
-const double DX_DISPARO     = 450.0;   // donde nacen respecto al capitan
-const double VEL_PROYECTIL  = 300.0;   // px/s hacia la izquierda
-const double MASA_PROYECTIL = 1.0;
+// ---- Proyectiles (placeholders: ajustar jugando) ----
+const double DX_DISPARO     = 450.0;   // donde nacen respecto al capitan: mas de media pantalla (400), fuera de vista
+const double VEL_PROYECTIL  = 300.0;   // px/s hacia la izquierda; igual para balas y lacrimogenas
+const double MASA_PROYECTIL = 1.0;     // la base exige > 0; no interviene en la fisica actual
 const double RADIO_PROYECTIL = 6.0;    // px; tambien decide si "nace dentro de un obstaculo"
-const int    LACRIMOGENA_REBOTES = 3;  // rebotes que sobrevive
+const int    LACRIMOGENA_REBOTES = 4;  // rebotes que sobrevive
 const double LACRIMOGENA_E       = 0.9;// restitucion: choque inelastico (pierde energia)
-const int    N_BALAS         = 10;     // maximo de balas vivas a la vez
-const int    N_LACRIMOGENAS  = 5;
+const int    N_BALAS         = 10;     // tamano del pool = maximo de balas vivas a la vez
+const int    N_LACRIMOGENAS  = 5;      // idem
 
-//  Ataques
+// ---- Ataques ----
 const int    N_ALTURAS          = 10;    // lugares desde donde se puede disparar
 const double ALTURA_MIN         = 110.0; // y del lugar mas alto
 const double PASO_ALTURA        = 45.0;  // separacion entre lugares (el mas bajo queda en 515)
 const int    ALTURAS_POR_ATAQUE = 5;     // cuantos lugares usa cada ataque (los mas cercanos al jugador)
-const int    BALAS_POR_ATAQUE   = 4;
-const int    LACRIS_POR_ATAQUE  = 3;
+const int    BALAS_POR_ATAQUE   = 4;     // debe ser <= N_BALAS
+const int    LACRIS_POR_ATAQUE  = 5;     // debe ser <= N_LACRIMOGENAS
 const double INTERVALO_DISPARO  = 0.55;  // s entre disparos de un mismo ataque
 const double ESPERA_ATAQUE      = 3.0;   // s entre el ultimo disparo y el ataque siguiente (tambien el primero)
 
@@ -58,12 +59,12 @@ void nivel1::construirMapa()
 {
     plataformas.clear();
     manifestantes.clear();
-    plataformas.reserve(24);
-    manifestantes.reserve(8);
+    plataformas.reserve(72);
+    manifestantes.reserve(14);
     const double s = Y_SUELO;
 
     // Limites del mapa (ANCHO_NIVEL1 = 6800.0)
-    plataformas.emplace_back(QPointF(s,0.0),anchoMapa,60,false,7);
+    plataformas.emplace_back(QPointF(0.0, -60.0), anchoMapa, 60.0, false, 0); // techo
     plataformas.emplace_back(QPointF(0.0, s),          anchoMapa, 60.0,     false, 7); // suelo
     plataformas.emplace_back(QPointF(-30.0, 0.0),      30.0,      s + 60.0, false, 0); // pared izquierda
     plataformas.emplace_back(QPointF(anchoMapa, 0.0),  30.0,      s + 60.0, false, 0); // pared derecha
@@ -135,6 +136,39 @@ void nivel1::construirMapa()
     plataformas.emplace_back(QPointF(6300.0, s - 300.0), 160.0, 22.0,  true,  4); // ultimo salto aereo
     plataformas.emplace_back(QPointF(6420.0, s - 220.0), 65.0,  220.0, false, 7); // ultimo muro antes de meta
     plataformas.emplace_back(QPointF(6520.0, s - 100.0), 180.0, 100.0, false, 1); // vehiculo final de llegada
+
+
+    // parte 9: extension
+    plataformas.emplace_back(QPointF(6760.0, s - 170.0), 140.0, 22.0,  true,  4);
+    manifestantes.emplace_back(QPointF(6780.0, s - 90.0), 360.0, 90.0, efecto::danio, 0.0);
+    plataformas.emplace_back(QPointF(7000.0, s - 290.0), 160.0, 22.0,  true,  5);
+    plataformas.emplace_back(QPointF(7440.0, s - 110.0), 60.0,  110.0, false, 7); // muro bajo
+    // parte 10
+    manifestantes.emplace_back(QPointF(7560.0, s - 90.0), 400.0, 90.0, efecto::danio, 0.0);
+    plataformas.emplace_back(QPointF(7600.0, s - 200.0), 140.0, 22.0,  true,  4);
+    plataformas.emplace_back(QPointF(7850.0, s - 300.0), 180.0, 22.0,  true,  5);
+    plataformas.emplace_back(QPointF(8000.0, s - 105.0), 250.0, 105.0, false, 2); // bus verde
+    // parte 11
+    plataformas.emplace_back(QPointF(8300.0, s - 320.0), 150.0, 22.0,  true,  5);
+    manifestantes.emplace_back(QPointF(8480.0, s - 90.0), 420.0, 90.0, efecto::danio, 0.0);
+    plataformas.emplace_back(QPointF(8660.0, s - 200.0), 170.0, 22.0,  true,  4);
+    plataformas.emplace_back(QPointF(9000.0, s - 110.0), 70.0,  110.0, false, 7); // muro bajo
+    plataformas.emplace_back(QPointF(9120.0, s - 180.0), 140.0, 22.0,  true,  4);
+    // parte 12
+    manifestantes.emplace_back(QPointF(9150.0, s - 90.0), 380.0, 90.0, efecto::danio, 0.0);
+    plataformas.emplace_back(QPointF(9300.0, s - 290.0), 180.0, 22.0,  true,  5);
+    plataformas.emplace_back(QPointF(9520.0, s - 400.0), 150.0, 22.0,  true,  4);
+    plataformas.emplace_back(QPointF(9680.0, s - 110.0), 360.0, 110.0, false, 6); // TransMilenio
+    plataformas.emplace_back(QPointF(9800.0, s - 220.0), 140.0, 22.0,  true,  4);
+    // parte 13
+    plataformas.emplace_back(QPointF(10080.0, s - 110.0), 70.0,  110.0, false, 7); // muro bajo
+    manifestantes.emplace_back(QPointF(10180.0, s - 90.0), 420.0, 90.0, efecto::danio, 0.0);
+    plataformas.emplace_back(QPointF(10300.0, s - 160.0), 170.0, 22.0,  true,  5);
+    plataformas.emplace_back(QPointF(10520.0, s - 260.0), 130.0, 22.0,  true,  4);
+    plataformas.emplace_back(QPointF(10700.0, s - 95.0),  190.0, 95.0,  false, 1); // camion
+    // parte 14: llegada
+    plataformas.emplace_back(QPointF(10950.0, s - 180.0), 160.0, 22.0,  true,  4);
+    manifestantes.emplace_back(QPointF(11050.0, s - 90.0), 160.0, 90.0, efecto::danio, 0.0);
 }
 
 void nivel1::construirBufos()
@@ -178,8 +212,11 @@ void nivel1::construirProy()
 
 void nivel1::actualizar(double dt)
 {
-    if (muro.getactivo())
-        muro.actualizar(dt);              // no hace nada mientras este inactivo
+    if (!muro.getactivo() && personaje.getPosicion().x() >= X_ACTIVARMURO)
+        muro.setactivo(true);
+
+    muro.actualizar(dt);
+
     if (muro.aplicar(personaje))
         return;                       // toco el borde izquierdo, muere al instante
 
@@ -253,13 +290,13 @@ bool nivel1::puntoLibre(double x, double y, double r) const
     return true;
 }
 
-void nivel1::chocarCon(proyectil& p) const
+void nivel1::chocarCon(proyectil& p, bool ca) const
 {
     for (const obstaculo& o : plataformas)
     {
         if (!p.estaActivo())
             return;
-        if (o.getAtravesable())
+        if (o.getAtravesable() && !ca)
             continue;
         if (o.colisionar(p, p.getCoefRestitucion()))
             p.registrarRebote();
@@ -321,7 +358,7 @@ void nivel1::actualizarProyectiles(double dt)
         if (!b.estaActivo())
             continue;
         b.actualizar(dt);
-        chocarCon(b);
+        chocarCon(b,false);
         if (b.estaActivo() && personaje.esGolpeado(b))
         {
             personaje.recibirDanio();
@@ -336,7 +373,7 @@ void nivel1::actualizarProyectiles(double dt)
         if (!l.estaActivo())
             continue;
         l.actualizar(dt);
-        chocarCon(l); // rebota y pierde energia hasta quedarse sin rebotes
+        chocarCon(l,true); // rebota y pierde energia hasta quedarse sin rebotes
         if (l.estaActivo() && personaje.esGolpeado(l))
             l.setActivo(false);
         // si sale de pantalla sin haber explotado, se apaga sin lanzar nube
@@ -468,8 +505,6 @@ void nivel1::setMuro(const muroPerseguidor& m)
 { muro = m; }
 
 //atajos para la vista
-void nivel1::setMuroActivo(bool activo)
-{ muro.setactivo(activo); }
 
 void nivel1::setDireccionPersonaje(int d)
 { personaje.setDireccion(d); }

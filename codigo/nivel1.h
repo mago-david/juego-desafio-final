@@ -5,7 +5,7 @@
 #include "obstaculo.h"
 #include "proyectil.h"
 #include "efecto.h"
-#include "muroperseguidor.h"
+#include "muroPerseguidor.h"
 class nivel1
 {
 private:
@@ -33,7 +33,7 @@ private:
     //ataques proyectil
     void construirProy();
     bool lanzarEn(std::vector<proyectil>& pool, const QPointF& pos,  const QPointF& vel, int rebotes);
-    void chocarCon(proyectil& p) const;
+    void chocarCon(proyectil& p, bool ca) const;
     void actualizarProyectiles(double dt);
     void lanzarProyectiles(double dt);
     void elegirAlturas();
@@ -78,7 +78,6 @@ public:
     void setAnchoMapa(double a);
     void setMuro(const muroPerseguidor& m);
     //atajos
-    void setMuroActivo(bool activo);
     void setDireccionPersonaje(int d);
     bool saltar();
     bool bajarPlataforma();
