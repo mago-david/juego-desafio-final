@@ -10,13 +10,25 @@
 #include <QPen>
 #include <algorithm>
 #include <cmath>
+namespace {
+QString formatearMMSS(double segundos)
+{
+    const int totalSeg = std::max(0, int(std::ceil(segundos)));
+    const int minutos  = totalSeg / 60;
+    const int segs     = totalSeg % 60;
+    return QString("%1:%2")
+        .arg(minutos, 2, 10, QChar('0'))
+        .arg(segs, 2, 10, QChar('0'));
+}
+}
 
 vistaN1::vistaN1(QWidget* parent)
     : vistaNivel(parent),
     nivel(), dibujoPersonaje(nullptr), dibujoSprite(nullptr),
     efectoDanio(nullptr), teclaA(false), teclaD(false),
-    estadoAnim(QUIETO), tAnim(0.0), mirandoIzq(false),
-    dibujoMuro(nullptr)
+    estadoAnim(QUIETO), tAnim(0.0), mirandoIzq(false),tiempoRestante(70.0),
+    muertePorTiempoEjecutada(false), cronometroActivo(false),fondoCronometro(nullptr),
+    textoTiempoRestante(nullptr), dibujoMuro(nullptr)
 {
     escena->setSceneRect(0.0, 0.0, nivel.getAnchoMapa(), datos::ALTO_ESCENA);
     cargarSprites();
@@ -51,7 +63,18 @@ vistaN1::vistaN1(QWidget* parent)
     framesGas = cargarFrames("danio", 3, 7, escalaGas);
     crearNubes();
     crearBufos();
+    //CRONO
+    fondoCronometro = escena->addRect(0.0, 0.0, 108.0, 34.0,
+                                      QPen(QColor(255, 255, 255, 90), 1.5),
+                                      QBrush(QColor(15, 18, 28, 200)));
+    fondoCronometro->setZValue(99);
+
+    QFont fuenteCrono("Consolas", 14, QFont::Bold);
+    textoTiempoRestante = escena->addSimpleText(QStringLiteral("01:10"), fuenteCrono);
+    textoTiempoRestante->setBrush(Qt::white);
+    textoTiempoRestante->setZValue(100);
 }
+
 
 void vistaN1::agregarCapa(const QString& ruta, double factor, int z)
 {
@@ -211,6 +234,7 @@ void vistaN1::actualizarSprite()
 }
 
 void vistaN1::avanzarLogica(double dt)
+
 {
     const int vidasAntes = nivel.getPersonaje().getVidas();
     nivel.actualizar(dt);
@@ -225,6 +249,26 @@ void vistaN1::avanzarLogica(double dt)
     if (vidasAhora < vidasAntes) {
         reproducirDanio();
     }
+    if (nivel.getPersonaje().getPosicion().x() >= nivel.getAnchoMapa() - 150.0) {
+        terminar(true);
+        return;
+    }
+    if (!cronometroActivo && (teclaD || nivel.getPersonaje().getPosicion().x() > 100.5)) {
+        cronometroActivo = true;
+    }
+
+    if (cronometroActivo && !muertePorTiempoEjecutada) {
+        tiempoRestante = std::max(0.0, tiempoRestante - dt);
+
+        if (tiempoRestante <= 0.0) {
+            muertePorTiempoEjecutada = true;
+            actualizarHUD(0);
+            reproducirMuerte();
+            terminar(false);
+            return;
+        }
+    }
+
     if (nivel.getPersonaje().getPosicion().x() >= nivel.getAnchoMapa() - 150.0) {
         terminar(true);
         return;
@@ -267,6 +311,26 @@ void vistaN1::dibujar(double a)
 
     centerOn(centroCamX, datos::ALTO_ESCENA / 2.0);
     actualizarHUD(nivel.getPersonaje().getVidas());
+    const QRectF vistaVisible = mapToScene(viewport()->rect()).boundingRect();
+    const double xCentro = vistaVisible.left() + vistaVisible.width() * 0.5;
+    const double yArriba = vistaVisible.top() + 10.0;
+
+    if (fondoCronometro) {
+        fondoCronometro->setPos(xCentro - 54.0, yArriba);
+    }
+
+    if (textoTiempoRestante) {
+        textoTiempoRestante->setText(formatearMMSS(tiempoRestante));
+        const double anchoTexto = textoTiempoRestante->boundingRect().width();
+        textoTiempoRestante->setPos(xCentro - anchoTexto * 0.5, yArriba + 6.0);
+
+        if (tiempoRestante <= 10.0) {
+            const bool parpadeoAlerta = (int(tiempoRestante * 6.0) % 2) == 0;
+            textoTiempoRestante->setBrush(parpadeoAlerta ? QColor(255, 65, 65) : QColor(255, 190, 60));
+        } else {
+            textoTiempoRestante->setBrush(Qt::white);
+        }
+    }
 }
 
 void vistaN1::actualizarDireccion()

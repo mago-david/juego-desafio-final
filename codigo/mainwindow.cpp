@@ -20,7 +20,13 @@ MainWindow::MainWindow(QWidget* parent)
     dificultadActual(Normal)
 {
     setCentralWidget(pilaVistas);
-
+    pilaVistas->setObjectName("pilaMenuGlobal");
+    pilaVistas->setObjectName("pilaMenuGlobal");
+    pilaVistas->setStyleSheet(
+        "#pilaMenuGlobal {"
+        " border-image: url(:/capitan/fondo/0.png) 0 0 0 0 stretch stretch;"
+        "}"
+        );
     paginaMenu = crearMenuPrincipal();
     paginaTutorialN1 = crearPantallaTutorial(
         "Tutorial - Nivel 1",
@@ -104,7 +110,7 @@ QWidget* MainWindow::crearMenuPrincipal()
     layout->addWidget(btnTutorialN2);
     layout->addWidget(btnSelectorNiv);
 
-    panel->setStyleSheet("background-color: #121318;");
+    panel->setStyleSheet("background: transparent;");
     return panel;
 }
 
@@ -143,7 +149,7 @@ QWidget* MainWindow::crearPantallaTutorial(const QString& titulo, const QString&
     layout->addWidget(lblTexto);
     layout->addWidget(btnVolver, 0, Qt::AlignCenter);
 
-    panel->setStyleSheet("background-color: #121318;");
+    panel->setStyleSheet("background: transparent;");
     return panel;
 }
 
@@ -188,7 +194,7 @@ QWidget* MainWindow::crearPantallaSelectorNiveles()
     layout->addWidget(btnNivel2);
     layout->addWidget(btnVolver);
 
-    panel->setStyleSheet("background-color: #121318;");
+    panel->setStyleSheet("background: transparent;");
     return panel;
 }
 

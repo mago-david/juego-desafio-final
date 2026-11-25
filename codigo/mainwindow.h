@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 
+
 class QStackedWidget;
 class QWidget;
 class vistaNivel;
