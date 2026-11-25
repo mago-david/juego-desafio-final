@@ -9,7 +9,7 @@
 
 class QGraphicsRectItem;
 class QGraphicsPixmapItem;
-class QGraphicsSimpleTextItem;
+class QGraphicsColorizeEffect;
 class QMouseEvent;
 
 class vistaN2 : public vistaNivel
@@ -26,8 +26,10 @@ private:
     QVector<QGraphicsPixmapItem*> dibujoHumos;
     QVector<QGraphicsPixmapItem*> dibujoAguas;
     QVector<QGraphicsPixmapItem*> dibujoEsbirros;
-    QGraphicsSimpleTextItem* textoVidas;
-
+    QGraphicsRectItem* barraJefeFondo;
+    QGraphicsRectItem* barraJefeRelleno;
+    QGraphicsRectItem* barraJefeBorde;
+    QGraphicsColorizeEffect* efectoCuracionJefe;
     // Sprites Capitán N2
     QPixmap spriteAbajoQuieto;
     QVector<QPixmap> framesAbajoCaminar;
@@ -95,6 +97,8 @@ private:
     void crearEsbirros();
     void dibujarEsbirros();
     void actualizarDireccion();
+    void crearBarraJefe();
+    void actualizarBarraJefe();
     const QPixmap& elegirFrameCapitan() const;
 
 protected:

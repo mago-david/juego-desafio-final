@@ -15,6 +15,7 @@
 #include "esbirro.h"
 #include "jefe.h"
 #include "proyectil.h"
+#include <QGraphicsColorizeEffect>
 
 namespace
 {
@@ -26,8 +27,8 @@ const double FPS_ANIMACION        = 10.0;
 
 vistaN2::vistaN2(QWidget* parent)
     : vistaNivel(parent),
-    nivel(), dibujoPersonaje(nullptr), dibujoJefe(nullptr), textoVidas(nullptr),
-    ultimaDirX(0), ultimaDirY(1), tiempoAnimacion(0.0), tiempoLanzando(0.0),
+    nivel(), dibujoPersonaje(nullptr), dibujoJefe(nullptr),barraJefeFondo(nullptr),barraJefeRelleno(nullptr),
+    barraJefeBorde(nullptr),efectoCuracionJefe(nullptr),ultimaDirX(0), ultimaDirY(1), tiempoAnimacion(0.0),tiempoLanzando(0.0),
     vidasPrevias(nivel.getPersonaje().getVidas()),
     jefeEstabaVivo(nivel.getJefe().estaVivo()),
     fortachonPrevio(nivel.getPersonaje().getFortachon() && nivel.getPersonaje().getTFortachon() > 0.0),
@@ -36,12 +37,12 @@ vistaN2::vistaN2(QWidget* parent)
     setUltimoNivel(true);
     escena->setSceneRect(0.0, 0.0, datos::ANCHO_ESCENA, datos::ALTO_ESCENA);
     setBackgroundBrush(Qt::black);
-    escena->setSceneRect(0.0, 0.0, datos::ANCHO_ESCENA, datos::ALTO_ESCENA);
-    setBackgroundBrush(Qt::black);
     cargarSprites();
     dibujarArena();
     dibujarJefe();
     dibujarPersonaje();
+    dibujarHUD(nivel.getPersonaje().getVidasMax());
+    crearBarraJefe();
     crearDibujos(nivel.getPersonaje().getEscudos(), dibujoEscudos, spriteEscudo);
     crearDibujos(nivel.getBalas(), dibujoBalas, spriteBala);
     crearEfectos();
@@ -49,10 +50,6 @@ vistaN2::vistaN2(QWidget* parent)
     crearHumos();
     crearAguas();
     crearEsbirros();
-    textoVidas = escena->addSimpleText(QString());
-    textoVidas->setBrush(Qt::white);
-    textoVidas->setPos(10.0, 10.0);
-    textoVidas->setZValue(10);
 }
 
 QVector<QPixmap> vistaN2::cargarListaFrames(const QString& carpeta, const QVector<int>& indices, double escala)
@@ -273,6 +270,12 @@ void vistaN2::dibujarJefe()
         dibujoJefe->setPos(c.getIzquierda(), c.getArriba());
     }
     dibujoJefe->setZValue(3);
+    efectoCuracionJefe = new QGraphicsColorizeEffect(this);
+    efectoCuracionJefe->setColor(QColor(70, 220, 110));
+    efectoCuracionJefe->setStrength(0.75);
+    efectoCuracionJefe->setEnabled(false);
+    if (dibujoJefe)
+        dibujoJefe->setGraphicsEffect(efectoCuracionJefe);
 }
 
 void vistaN2::crearEfectos()
@@ -303,6 +306,48 @@ void vistaN2::dibujarEfectos()
         switch (e.gettipo()) {
         case efecto::senal: it->setBrush(COLOR_SENAL); it->setZValue(6); break;
         default:            it->setBrush(COLOR_OTRO);  it->setZValue(2); break;
+        }
+    }
+}
+void vistaN2::crearBarraJefe()
+{
+    const double anchoBarra = 360.0;
+    const double altoBarra  = 18.0;
+    const double xBarra     = (datos::ANCHO_ESCENA - anchoBarra) / 2.0;
+    const double yBarra     = 14.0;
+
+    barraJefeFondo = escena->addRect(xBarra, yBarra, anchoBarra, altoBarra,
+                                     QPen(Qt::NoPen), QBrush(QColor(35, 35, 45, 220)));
+    barraJefeFondo->setZValue(100);
+
+    barraJefeRelleno = escena->addRect(xBarra, yBarra, anchoBarra, altoBarra,
+                                       QPen(Qt::NoPen), QBrush(QColor(210, 45, 45)));
+    barraJefeRelleno->setZValue(101);
+
+    barraJefeBorde = escena->addRect(xBarra, yBarra, anchoBarra, altoBarra,
+                                     QPen(Qt::white, 2.0), QBrush(Qt::NoBrush));
+    barraJefeBorde->setZValue(102);
+}
+void vistaN2::actualizarBarraJefe()
+{
+    if (!barraJefeRelleno || !barraJefeBorde)
+        return;
+    const jefe& j = nivel.getJefe();
+    const double vidaActual = std::max(0.0, double(j.getVida()));
+    const double vidaMax    = std::max(1.0, double(j.getVidaMax()));
+    const double proporcion = std::clamp(vidaActual / vidaMax, 0.0, 1.0);
+    const QRectF rectBase = barraJefeBorde->rect();
+    barraJefeRelleno->setRect(rectBase.x(), rectBase.y(),
+                              rectBase.width() * proporcion, rectBase.height());
+    const bool curando = j.estaCurando();
+    barraJefeRelleno->setBrush(curando ? QBrush(QColor(70, 200, 110))
+                                       : QBrush(QColor(210, 45, 45)));
+    if (efectoCuracionJefe && dibujoJefe) {
+        if (curando) {
+            const bool pulsoVerde = (int(tiempoAnimacion * 12.0) % 2) == 0;
+            efectoCuracionJefe->setEnabled(pulsoVerde);
+        } else {
+            efectoCuracionJefe->setEnabled(false);
         }
     }
 }
@@ -587,17 +632,8 @@ void vistaN2::dibujar(double)
     const bool curando = nivel.getJefe().estaCurando();
     dibujoJefe->setOpacity(curando ? 0.65 : 1.0);
 
-    const double tFort = cap.getTFortachon();
-    const bool fortachonActivo = cap.getFortachon() && tFort > 0.0;
-
-    textoVidas->setText(QString("Vidas: %1     Jefe: %2 / %3%4%5")
-                            .arg(cap.getVidas())
-                            .arg(nivel.getJefe().getVida())
-                            .arg(nivel.getJefe().getVidaMax())
-                            .arg(curando ? "   CURANDO" : "")
-                            .arg(fortachonActivo
-                                     ? QString("   FORTACHON (%1s)").arg(tFort, 0, 'f', 1)
-                                     : QString()));
+    actualizarHUD(nivel.getPersonaje().getVidas());
+    actualizarBarraJefe();
 }
 
 void vistaN2::actualizarDireccion()
