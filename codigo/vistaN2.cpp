@@ -16,6 +16,8 @@
 #include "jefe.h"
 #include "proyectil.h"
 #include <QGraphicsColorizeEffect>
+#include <QMediaPlayer>
+#include <QAudioOutput>
 
 namespace
 {
@@ -28,7 +30,8 @@ const double FPS_ANIMACION        = 10.0;
 vistaN2::vistaN2(QWidget* parent)
     : vistaNivel(parent),
     nivel(), dibujoPersonaje(nullptr), dibujoJefe(nullptr),barraJefeFondo(nullptr),barraJefeRelleno(nullptr),
-    barraJefeBorde(nullptr),efectoCuracionJefe(nullptr),ultimaDirX(0), ultimaDirY(1), tiempoAnimacion(0.0),tiempoLanzando(0.0),
+    barraJefeBorde(nullptr),efectoCuracionJefe(nullptr),reproductorJefe(nullptr),
+    salidaAudioJefe(nullptr),ultimaDirX(0), ultimaDirY(1), tiempoAnimacion(0.0),tiempoLanzando(0.0),
     vidasPrevias(nivel.getPersonaje().getVidas()),
     jefeEstabaVivo(nivel.getJefe().estaVivo()),vidaJefePrevia(nivel.getJefe().getVida()),
     fortachonPrevio(nivel.getPersonaje().getFortachon() && nivel.getPersonaje().getTFortachon() > 0.0),
@@ -50,6 +53,13 @@ vistaN2::vistaN2(QWidget* parent)
     crearHumos();
     crearAguas();
     crearEsbirros();
+    reproductorJefe = new QMediaPlayer(this);
+    salidaAudioJefe = new QAudioOutput(this);
+    reproductorJefe->setAudioOutput(salidaAudioJefe);
+    reproductorJefe->setSource(QUrl(QStringLiteral("qrc:/capitan/sonidos_fondo/2.mp3")));
+    reproductorJefe->setLoops(QMediaPlayer::Infinite);
+    salidaAudioJefe->setVolume(0.45f); // ajustar volumen audio
+    reproductorJefe->play();
 
 }
 
@@ -607,6 +617,18 @@ void vistaN2::avanzarLogica(double dt)
         reproducirGolpeJefe();
     }
     vidaJefePrevia = vidaJefeActual;
+    if (jefeEstabaVivo && !jefeVivo) {
+        jefeEstabaVivo = false;
+        if (reproductorJefe)
+            reproductorJefe->stop();
+        terminar(true);
+        return;
+    }
+    if (!cap.estaVivo()) {
+        if (reproductorJefe)
+            reproductorJefe->stop();
+        terminar(false);
+    }
 }
 
 void vistaN2::dibujar(double)

@@ -7,6 +7,8 @@
 #include "vistaNivel.h"
 #include "nivel2.h"
 
+class QMediaPlayer;
+class QAudioOutput;
 class QGraphicsRectItem;
 class QGraphicsPixmapItem;
 class QGraphicsColorizeEffect;
@@ -30,6 +32,9 @@ private:
     QGraphicsRectItem* barraJefeRelleno;
     QGraphicsRectItem* barraJefeBorde;
     QGraphicsColorizeEffect* efectoCuracionJefe;
+    //musica bos figt
+    QMediaPlayer* reproductorJefe;
+    QAudioOutput* salidaAudioJefe;
     // Sprites Capitán N2
     QPixmap spriteAbajoQuieto;
     QVector<QPixmap> framesAbajoCaminar;
