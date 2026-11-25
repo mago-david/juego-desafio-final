@@ -1,15 +1,10 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
+
 #include <QMainWindow>
 
 class QStackedWidget;
 class QWidget;
-class vistaNivel;
-
-QT_BEGIN_NAMESPACE
-namespace Ui { class MainWindow; }
-QT_END_NAMESPACE
-
 class vistaNivel;
 
 class MainWindow : public QMainWindow
@@ -17,6 +12,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 public:
     enum Dificultad { Normal, Dificil };
+
 private:
     QStackedWidget* pilaVistas;
     QWidget* paginaMenu;
@@ -30,6 +26,7 @@ private:
     QWidget* crearMenuPrincipal();
     QWidget* crearPantallaTutorial(const QString& titulo, const QString& contenido);
     QWidget* crearPantallaSelectorNiveles();
+    void limpiarVistaActual();
     void cargarNivel(int numeroNivel);
 
 private slots:

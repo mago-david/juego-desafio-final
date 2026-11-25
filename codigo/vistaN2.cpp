@@ -5,6 +5,7 @@
 #include <QGraphicsPixmapItem>
 #include <QGraphicsSimpleTextItem>
 #include <QMouseEvent>
+#include <QPainter>
 #include <QTransform>
 #include <QBrush>
 #include <QPen>
@@ -18,8 +19,6 @@
 namespace
 {
 const QColor COLOR_SENAL(255, 220, 0, 110);
-const QColor COLOR_CHORRO(60, 140, 255, 200);
-const QColor COLOR_GAS(160, 160, 160, 120);
 const QColor COLOR_OTRO(80, 200, 80, 150);
 const double DURACION_ANIM_LANZAR = 0.25;
 const double FPS_ANIMACION        = 10.0;
@@ -31,8 +30,12 @@ vistaN2::vistaN2(QWidget* parent)
     ultimaDirX(0), ultimaDirY(1), tiempoAnimacion(0.0), tiempoLanzando(0.0),
     vidasPrevias(nivel.getPersonaje().getVidas()),
     jefeEstabaVivo(nivel.getJefe().estaVivo()),
-    fortachonPrevio(nivel.getPersonaje().getFortachon() && nivel.getPersonaje().getTFortachon() > 0.0)
+    fortachonPrevio(nivel.getPersonaje().getFortachon() && nivel.getPersonaje().getTFortachon() > 0.0),
+    teclaW(false), teclaA(false), teclaS(false), teclaD(false)
 {
+    setUltimoNivel(true);
+    escena->setSceneRect(0.0, 0.0, datos::ANCHO_ESCENA, datos::ALTO_ESCENA);
+    setBackgroundBrush(Qt::black);
     escena->setSceneRect(0.0, 0.0, datos::ANCHO_ESCENA, datos::ALTO_ESCENA);
     setBackgroundBrush(Qt::black);
     cargarSprites();
@@ -78,7 +81,7 @@ QVector<QPixmap> vistaN2::voltearListaHorizontal(const QVector<QPixmap>& orig)
 
 void vistaN2::cargarSprites()
 {
-    // Escala base relativa al diametro del Capitan (radio = 20)
+    // Escala base relativa al diámetro del Capitán (radio = 20)
     const double altoCapitan = nivel.getPersonaje().getRadio() * 2.3;
     QPixmap ref = prepararFrame(":/capitan2/abajo/1.png", 1.0);
     const double escalaCap = (!ref.isNull() && ref.height() > 0) ? (altoCapitan / double(ref.height())) : 1.0;
@@ -117,7 +120,8 @@ void vistaN2::cargarSprites()
     QPixmap bufoRaw = prepararFrame(":/capitan/vida/4.png", 1.0);
     if (!bufoRaw.isNull())
         spriteBufo = bufoRaw.scaled(28, 28, Qt::KeepAspectRatio, Qt::SmoothTransformation);
-    // HUMO
+
+    // Humo
     const double altoHumo = 64.0;
     QPixmap refHumo = prepararFrame(":/capitan/danio/3.png", 1.0);
     const double escalaHumo = (!refHumo.isNull() && refHumo.height() > 0)
@@ -128,12 +132,14 @@ void vistaN2::cargarSprites()
         if (!p.isNull())
             framesHumo.append(p);
     }
-    //chorro de agua
+
+    // Chorro de agua
     for (int idx = 6; idx <= 8; ++idx) {
         QPixmap p = prepararFrame(QString(":/capitan2/jefe/%1.png").arg(idx), 1.0);
         if (!p.isNull())
             framesAgua.append(p);
     }
+
     // Escudo en vuelo (radio = 12)
     QPixmap escRaw = prepararFrame(":/capitan2/escudo/1.png", 1.0);
     if (!escRaw.isNull())
@@ -211,7 +217,7 @@ void vistaN2::dibujarArena()
         }
     }
 
-    // Esquinas de la arena (tamano g x g)
+    // Esquinas de la arena (tamaño g x g)
     const double g = datos::GROSOR_PARED;
     const QPointF esquinas[4] = {
         QPointF(area.left(), area.top()),
@@ -295,10 +301,8 @@ void vistaN2::dibujarEfectos()
         it->setVisible(true);
         it->setRect(e.getIzquierda(), e.getArriba(), e.getAncho(), e.getAlto());
         switch (e.gettipo()) {
-        case efecto::senal: it->setBrush(COLOR_SENAL);  it->setZValue(6); break;
-        case efecto::danio: it->setBrush(COLOR_CHORRO); it->setZValue(2); break;
-        case efecto::gas:   it->setBrush(COLOR_GAS);    it->setZValue(2); break;
-        default:            it->setBrush(COLOR_OTRO);   it->setZValue(2); break;
+        case efecto::senal: it->setBrush(COLOR_SENAL); it->setZValue(6); break;
+        default:            it->setBrush(COLOR_OTRO);  it->setZValue(2); break;
         }
     }
 }
@@ -337,6 +341,7 @@ void vistaN2::dibujarBufos()
         }
     }
 }
+
 void vistaN2::crearHumos()
 {
     const int n = int(nivel.getEfectos().size());
@@ -359,11 +364,17 @@ void vistaN2::dibujarHumos()
         const bool mostrarHumo = e.getactivo() && (e.gettipo() == efecto::gas);
         it->setVisible(mostrarHumo);
         if (mostrarHumo && !framesHumo.isEmpty()) {
-            const QPixmap& base = framesHumo[step % framesHumo.size()];
-            if (!base.isNull()) {
-                const int w = std::max(1, int(e.getAncho()));
-                const int h = std::max(1, int(e.getAlto()));
-                QPixmap escalado = base.scaled(w, h, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+            const QSize tamActual(std::max(1, int(e.getAncho())), std::max(1, int(e.getAlto())));
+            if (tamCacheHumo != tamActual || cacheHumos.size() != framesHumo.size()) {
+                tamCacheHumo = tamActual;
+                cacheHumos.clear();
+                cacheHumos.reserve(framesHumo.size());
+                for (const QPixmap& base : framesHumo) {
+                    cacheHumos.append(base.scaled(tamActual, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
+                }
+            }
+            const QPixmap& escalado = cacheHumos[step % cacheHumos.size()];
+            if (!escalado.isNull()) {
                 it->setOffset(-escalado.width() / 2.0, -escalado.height() / 2.0);
                 it->setPixmap(escalado);
                 it->setPos(e.getIzquierda() + e.getAncho() / 2.0,
@@ -372,6 +383,7 @@ void vistaN2::dibujarHumos()
         }
     }
 }
+
 void vistaN2::crearAguas()
 {
     const int n = int(nivel.getEfectos().size());
@@ -394,32 +406,42 @@ void vistaN2::dibujarAguas()
         const bool mostrarAgua = e.getactivo() && (e.gettipo() == efecto::danio);
         it->setVisible(mostrarAgua);
         if (mostrarAgua && !framesAgua.isEmpty()) {
-            const QPixmap& base = framesAgua[step % framesAgua.size()];
-            if (!base.isNull()) {
-                const int w = std::max(1, int(e.getAncho()));
-                const int h = std::max(1, int(e.getAlto()));
+            const int w = std::max(1, int(e.getAncho()));
+            const int h = std::max(1, int(e.getAlto()));
+            const QSize tamActual(w, h);
 
-                QPixmap tramo = base;
+            if (tamCacheAgua != tamActual || cacheAguas.size() != framesAgua.size()) {
+                tamCacheAgua = tamActual;
+                cacheAguas.clear();
+                cacheAguas.reserve(framesAgua.size());
                 const bool ataqueHorizontal = (w > h);
-                if (!ataqueHorizontal) {
-                    tramo = tramo.transformed(QTransform().rotate(90.0), Qt::SmoothTransformation);
-                    tramo = tramo.scaledToWidth(w, Qt::SmoothTransformation);
-                } else {
-                    tramo = tramo.scaledToHeight(h, Qt::SmoothTransformation);
+
+                for (const QPixmap& base : framesAgua) {
+                    QPixmap tramo = base;
+                    if (!ataqueHorizontal) {
+                        tramo = tramo.transformed(QTransform().rotate(90.0), Qt::SmoothTransformation);
+                        tramo = tramo.scaledToWidth(w, Qt::SmoothTransformation);
+                    } else {
+                        tramo = tramo.scaledToHeight(h, Qt::SmoothTransformation);
+                    }
+                    QPixmap completo(w, h);
+                    completo.fill(Qt::transparent);
+                    QPainter painter(&completo);
+                    painter.drawTiledPixmap(0, 0, w, h, tramo);
+                    painter.end();
+                    cacheAguas.append(completo);
                 }
+            }
 
-                QPixmap completo(w, h);
-                completo.fill(Qt::transparent);
-                QPainter painter(&completo);
-                painter.drawTiledPixmap(0, 0, w, h, tramo);
-                painter.end();
-
-                it->setPixmap(completo);
+            const QPixmap& listo = cacheAguas[step % cacheAguas.size()];
+            if (!listo.isNull()) {
+                it->setPixmap(listo);
                 it->setPos(e.getIzquierda(), e.getArriba());
             }
         }
     }
 }
+
 void vistaN2::crearEsbirros()
 {
     const std::vector<esbirro>& esbirros = nivel.getEsbirros();
@@ -508,20 +530,23 @@ void vistaN2::avanzarLogica(double dt)
         ultimaDirY = dy;
     }
     nivel.actualizar(dt);
-    const int vidasActuales = nivel.getPersonaje().getVidas();
+
+    const capitanN2& cap = nivel.getPersonaje();
+    const int vidasActuales = cap.getVidas();
     if (vidasActuales < vidasPrevias) {
         if (vidasActuales <= 0)
             reproducirMuerte();
         else
             reproducirDanio();
     }
-    const capitanN2& cap = nivel.getPersonaje();
+    vidasPrevias = vidasActuales;
+
     const bool fortachonAhora = cap.getFortachon() && cap.getTFortachon() > 0.0;
     if (fortachonAhora && !fortachonPrevio) {
         reproducirBufo();
     }
     fortachonPrevio = fortachonAhora;
-    vidasPrevias = vidasActuales;
+
     const bool jefeVivo = nivel.getJefe().estaVivo();
     if (jefeEstabaVivo && !jefeVivo) {
         jefeEstabaVivo = false;
@@ -529,7 +554,7 @@ void vistaN2::avanzarLogica(double dt)
         terminar(true);
         return;
     }
-    if (!nivel.getPersonaje().estaVivo()) {
+    if (!cap.estaVivo()) {
         reproducirGameOver();
         terminar(false);
     }
@@ -617,18 +642,3 @@ void vistaN2::mousePressEvent(QMouseEvent* e)
         vistaNivel::mousePressEvent(e);
     }
 }
-
-const nivel2& vistaN2::getNivel() const
-{ return nivel; }
-
-bool vistaN2::getTeclaW() const
-{ return teclaW; }
-
-bool vistaN2::getTeclaA() const
-{ return teclaA; }
-
-bool vistaN2::getTeclaS() const
-{ return teclaS; }
-
-bool vistaN2::getTeclaD() const
-{ return teclaD; }

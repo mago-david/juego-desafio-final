@@ -1,7 +1,9 @@
 #ifndef VISTAN2_H
 #define VISTAN2_H
+
 #include <QVector>
 #include <QPixmap>
+#include <QSize>
 #include "vistaNivel.h"
 #include "nivel2.h"
 
@@ -49,6 +51,12 @@ private:
     QVector<QPixmap> framesHumo;
     QVector<QPixmap> framesAgua;
 
+    // Caché para evitar escalar/tilear en cada frame
+    QVector<QPixmap> cacheHumos;
+    QSize tamCacheHumo;
+    QVector<QPixmap> cacheAguas;
+    QSize tamCacheAgua;
+
     // Sprites Arena / Jefe / Esbirros (capitan2/jefe/1..5.png)
     QPixmap spritePiso;
     QPixmap spriteMuroHorizontal;
@@ -88,6 +96,7 @@ private:
     void dibujarEsbirros();
     void actualizarDireccion();
     const QPixmap& elegirFrameCapitan() const;
+
 protected:
     void avanzarLogica(double dt) override;
     void dibujar(double alfa) override;
@@ -95,13 +104,9 @@ protected:
     void alSoltar(int tecla) override;
     void alPerderFoco() override;
     void mousePressEvent(QMouseEvent* e) override;
+
 public:
     explicit vistaN2(QWidget* parent = nullptr);
-    const nivel2& getNivel() const;
-    bool getTeclaW() const;
-    bool getTeclaA() const;
-    bool getTeclaS() const;
-    bool getTeclaD() const;
 };
 
 #endif // VISTAN2_H
