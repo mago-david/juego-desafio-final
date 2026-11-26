@@ -8,6 +8,8 @@
 #include <QTransform>
 #include <QBrush>
 #include <QPen>
+#include <QFont>
+#include <QGraphicsSimpleTextItem>
 #include <algorithm>
 #include <cmath>
 namespace {
@@ -234,7 +236,6 @@ void vistaN1::actualizarSprite()
 }
 
 void vistaN1::avanzarLogica(double dt)
-
 {
     const int vidasAntes = nivel.getPersonaje().getVidas();
     nivel.actualizar(dt);
@@ -267,11 +268,6 @@ void vistaN1::avanzarLogica(double dt)
             terminar(false);
             return;
         }
-    }
-
-    if (nivel.getPersonaje().getPosicion().x() >= nivel.getAnchoMapa() - 150.0) {
-        terminar(true);
-        return;
     }
 }
 

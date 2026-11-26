@@ -37,6 +37,7 @@
         <file>capitan/danio/5.png</file>
         <file>capitan/danio/6.png</file>
         <file>capitan/danio/7.png</file>
+        <file>capitan/danio/8.png</file>
         <file>capitan/obstaculos/1.png</file>
         <file>capitan/obstaculos/2.png</file>
         <file>capitan/obstaculos/3.png</file>
@@ -49,6 +50,7 @@
         <file>capitan/sonidos_danio/2.wav</file>
         <file>capitan/sonidos_danio/3.wav</file>
         <file>capitan/sonidos_danio/4.wav</file>
+        <file>capitan/sonidos_fondo/1.mp3</file>
         <file>capitan/sonidos_fondo/2.mp3</file>
         <file>capitan/bufo/bufo.wav</file>
         <file>capitan2/abajo/1.png</file>

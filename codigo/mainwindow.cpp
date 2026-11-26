@@ -17,10 +17,15 @@ MainWindow::MainWindow(QWidget* parent)
     paginaSelectorNiveles(nullptr),
     vista(nullptr),
     nivelActual(1),
-    dificultadActual(Normal)
+    dificultadActual(Normal),
+    musica(new QMediaPlayer(this)),
+    salidaMusica(new QAudioOutput(this))
 {
+    musica->setAudioOutput(salidaMusica);   // aqui se paga la inicializacion, con el menu en pantalla
+    salidaMusica->setVolume(0.45f);
+    musica->setLoops(QMediaPlayer::Infinite);
+
     setCentralWidget(pilaVistas);
-    pilaVistas->setObjectName("pilaMenuGlobal");
     pilaVistas->setObjectName("pilaMenuGlobal");
     pilaVistas->setStyleSheet(
         "#pilaMenuGlobal {"
@@ -47,6 +52,7 @@ MainWindow::MainWindow(QWidget* parent)
     pilaVistas->addWidget(paginaTutorialN2);
     pilaVistas->addWidget(paginaSelectorNiveles);
     pilaVistas->setCurrentWidget(paginaMenu);
+    setStyleSheet("QMainWindow { background-color: black; }");
 }
 
 QWidget* MainWindow::crearMenuPrincipal()
@@ -249,6 +255,14 @@ void MainWindow::cargarNivel(int numeroNivel)
     pilaVistas->addWidget(vista);
     pilaVistas->setCurrentWidget(vista);
     vista->iniciar();
+    //rutas de musica
+    const QUrl cancion(nivelActual == 1 ? "qrc:/capitan/sonidos_fondo/1.mp3"
+                                        : "qrc:/capitan/sonidos_fondo/2.mp3");
+    if (musica->source() != cancion)
+        musica->setSource(cancion);
+    musica->setPosition(0);
+    musica->play();
+    connect(vista, &vistaNivel::terminado, this, [this](bool) { musica->stop(); });
 }
 
 void MainWindow::reiniciarNivel()
@@ -258,6 +272,7 @@ void MainWindow::reiniciarNivel()
 
 void MainWindow::abrirMenu()
 {
+    musica->stop();
     limpiarVistaActual();
     setWindowTitle("Menú Principal");
     pilaVistas->setCurrentWidget(paginaMenu);

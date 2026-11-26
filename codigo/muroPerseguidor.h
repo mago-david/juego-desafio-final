@@ -14,7 +14,7 @@ public:
     muroPerseguidor(const muroPerseguidor& o);
     ~muroPerseguidor();
     //accion
-    void actualizar(double dt);
+    void actualizar(double dt,double xcapi);
     bool aplicar(capitan& c)const;
     //acceso
     double getvelocidad()const;

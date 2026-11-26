@@ -13,11 +13,14 @@ muroPerseguidor::muroPerseguidor(const QPointF& esquina_, double ancho_, double 
 muroPerseguidor::muroPerseguidor(const muroPerseguidor& o)
     : zona(o), velocidad(o.velocidad), activo(o.activo) {}
 muroPerseguidor::~muroPerseguidor() {}
-void muroPerseguidor::actualizar(double dt)
+
+void muroPerseguidor::actualizar(double dt,double xcapi)
 {
     if (!activo)
         return;
-    setEsquina(QPointF(getEsquina().x()+velocidad*dt,getEsquina().y()));
+    const double distancia = xcapi - getDerecha();
+    const double v = (distancia > datos::DIST_MURO_NORMAL) ? velocidad * 2.0 : velocidad;
+    setEsquina(QPointF(getEsquina().x() + v * dt, getEsquina().y()));
 }
 bool muroPerseguidor::aplicar(capitan& c) const
 {

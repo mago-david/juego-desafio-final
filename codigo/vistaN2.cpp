@@ -16,8 +16,7 @@
 #include "jefe.h"
 #include "proyectil.h"
 #include <QGraphicsColorizeEffect>
-#include <QMediaPlayer>
-#include <QAudioOutput>
+
 namespace
 {
 const QColor COLOR_SENAL(255, 220, 0, 110);
@@ -29,8 +28,7 @@ const double FPS_ANIMACION        = 10.0;
 vistaN2::vistaN2(bool dificultad, QWidget* parent)
     : vistaNivel(parent),
     nivel(dificultad), dibujoPersonaje(nullptr), dibujoJefe(nullptr),barraJefeFondo(nullptr),barraJefeRelleno(nullptr),
-    barraJefeBorde(nullptr),efectoCuracionJefe(nullptr),reproductorJefe(nullptr),
-    salidaAudioJefe(nullptr),ultimaDirX(0), ultimaDirY(1), tiempoAnimacion(0.0),tiempoLanzando(0.0),
+    barraJefeBorde(nullptr),efectoCuracionJefe(nullptr),ultimaDirX(0), ultimaDirY(1), tiempoAnimacion(0.0),tiempoLanzando(0.0),
     vidasPrevias(nivel.getPersonaje().getVidas()),
     jefeEstabaVivo(nivel.getJefe().estaVivo()),vidaJefePrevia(nivel.getJefe().getVida()),
     fortachonPrevio(nivel.getPersonaje().getFortachon() && nivel.getPersonaje().getTFortachon() > 0.0),
@@ -47,18 +45,15 @@ vistaN2::vistaN2(bool dificultad, QWidget* parent)
     crearBarraJefe();
     crearDibujos(nivel.getPersonaje().getEscudos(), dibujoEscudos, spriteEscudo);
     crearDibujos(nivel.getBalas(), dibujoBalas, spriteBala);
+    for (QGraphicsPixmapItem* it : dibujoBalas)
+    {
+        it->setOffset(-spriteBala.width() * 0.91, -spriteBala.height() * 0.48);
+    }
     crearEfectos();
     crearBufos();
     crearHumos();
     crearAguas();
     crearEsbirros();
-    reproductorJefe = new QMediaPlayer(this);
-    salidaAudioJefe = new QAudioOutput(this);
-    reproductorJefe->setAudioOutput(salidaAudioJefe);
-    reproductorJefe->setSource(QUrl(QStringLiteral("qrc:/capitan/sonidos_fondo/2.mp3")));
-    reproductorJefe->setLoops(QMediaPlayer::Infinite);
-    salidaAudioJefe->setVolume(0.45f);
-    reproductorJefe->play();
 
 }
 
@@ -146,16 +141,18 @@ void vistaN2::cargarSprites()
         if (!p.isNull())
             framesAgua.append(p);
     }
-
     // Escudo en vuelo (radio = 12)
     QPixmap escRaw = prepararFrame(":/capitan2/escudo/1.png", 1.0);
     if (!escRaw.isNull())
-        spriteEscudo = escRaw.scaled(26, 26, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+        spriteEscudo = escRaw.scaled(36, 36, Qt::KeepAspectRatio, Qt::SmoothTransformation);
 
     // Bala enemiga
     QPixmap balaRaw = prepararFrame(":/capitan/danio/1.png", 1.0);
-    if (!balaRaw.isNull())
-        spriteBala = balaRaw.scaled(90, 90, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+    if (!balaRaw.isNull()) {
+        const double r = nivel.getBalas().empty() ? 6.0 : nivel.getBalas().front().getRadio();
+        spriteBala = balaRaw.copy(368, 381, 294, 46)                       // quita el margen transparente
+                         .scaledToHeight(int(3.1 * r), Qt::SmoothTransformation); // punta ≈ diámetro de la hitbox
+    }
 
     // Piso, muros, esbirro y jefe
     QPixmap pisoRaw = prepararFrame(":/capitan2/jefe/1.png", 1.0);
@@ -610,12 +607,10 @@ void vistaN2::avanzarLogica(double dt)
     const bool jefeVivo = nivel.getJefe().estaVivo();
     if (jefeEstabaVivo && !jefeVivo) {
         jefeEstabaVivo = false;
-        reproductorJefe->stop();
         terminar(true);
         return;
     }
     if (!cap.estaVivo()) {
-        reproductorJefe->stop();
         terminar(false);
     }
 }
@@ -639,6 +634,13 @@ void vistaN2::dibujar(double)
 
     dibujarPool(cap.getEscudos(), dibujoEscudos, true);
     dibujarPool(nivel.getBalas(), dibujoBalas, false);
+    const std::vector<proyectil>& balas = nivel.getBalas();
+    for (int i = 0; i < int(balas.size()); ++i) {
+        if (balas[i].estaActivo()) {
+            const QPointF v = balas[i].getVelocidad();
+            dibujoBalas[i]->setRotation(std::atan2(v.y(), v.x()) * 57.29577951308232); // rad → grados
+        }
+    }
     dibujarEfectos();
     dibujarBufos();
     dibujarHumos();

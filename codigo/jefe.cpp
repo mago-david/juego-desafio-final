@@ -20,8 +20,8 @@ namespace
     const int NUM_MODOS = 3;
     const int NUM_ORIENTACIONES = 2;
     //tiempos
-    const double T_RECARGA = 2.0;
-    const double T_AVISO = 1.0;
+    const double T_RECARGA = 1.6;
+    const double T_AVISO = 0.6;
     const double T_DISPARO = 1.5;
     const double T_GAS = 6.0;
     //chorros
