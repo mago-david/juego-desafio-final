@@ -27,11 +27,9 @@ const double FPS_ANIMACION        = 10.0;
 
 vistaN2::vistaN2(bool dificultad, QWidget* parent)
     : vistaNivel(parent),
-    nivel(dificultad), dibujoPersonaje(nullptr), dibujoJefe(nullptr),barraJefeFondo(nullptr),barraJefeRelleno(nullptr),
-    barraJefeBorde(nullptr),efectoCuracionJefe(nullptr),ultimaDirX(0), ultimaDirY(1), tiempoAnimacion(0.0),tiempoLanzando(0.0),
-    vidasPrevias(nivel.getPersonaje().getVidas()),
-    jefeEstabaVivo(nivel.getJefe().estaVivo()),vidaJefePrevia(nivel.getJefe().getVida()),
-    fortachonPrevio(nivel.getPersonaje().getFortachon() && nivel.getPersonaje().getTFortachon() > 0.0),
+    nivel(dificultad), dibujoPersonaje(nullptr), dibujoJefe(nullptr),
+    barraJefeRelleno(nullptr), barraJefeBorde(nullptr), efectoCuracionJefe(nullptr),
+    ultimaDirX(0), ultimaDirY(1), tiempoAnimacion(0.0), tiempoLanzando(0.0),
     teclaW(false), teclaA(false), teclaS(false), teclaD(false)
 {
     setUltimoNivel(true);
@@ -43,18 +41,32 @@ vistaN2::vistaN2(bool dificultad, QWidget* parent)
     dibujarPersonaje();
     dibujarHUD(nivel.getPersonaje().getVidasMax());
     crearBarraJefe();
-    crearDibujos(nivel.getPersonaje().getEscudos(), dibujoEscudos, spriteEscudo);
-    crearDibujos(nivel.getBalas(), dibujoBalas, spriteBala);
-    for (QGraphicsPixmapItem* it : dibujoBalas)
-    {
-        it->setOffset(-spriteBala.width() * 0.91, -spriteBala.height() * 0.48);
-    }
+    crearProyectiles();
     crearEfectos();
     crearBufos();
     crearHumos();
     crearAguas();
     crearEsbirros();
+}
 
+void vistaN2::crearProyectiles()
+{
+    // Escudo en vuelo (radio = 12)
+    QPixmap escudo = prepararFrame(":/capitan2/escudo/1.png", 1.0);
+    if (!escudo.isNull())
+        escudo = escudo.scaled(36, 36, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+    crearDibujos(nivel.getPersonaje().getEscudos(), dibujoEscudos, escudo);
+
+    // Bala enemiga
+    QPixmap bala = prepararFrame(":/capitan/danio/1.png", 1.0);
+    if (!bala.isNull()) {
+        const double r = nivel.getBalas().empty() ? 6.0 : nivel.getBalas().front().getRadio();
+        bala = bala.copy(368, 381, 294, 46)
+                   .scaledToHeight(int(3.1 * r), Qt::SmoothTransformation);
+    }
+    crearDibujos(nivel.getBalas(), dibujoBalas, bala);
+    for (QGraphicsPixmapItem* it : dibujoBalas)
+        it->setOffset(-bala.width() * 0.91, -bala.height() * 0.48);
 }
 
 QVector<QPixmap> vistaN2::cargarListaFrames(const QString& carpeta, const QVector<int>& indices, double escala)
@@ -141,42 +153,17 @@ void vistaN2::cargarSprites()
         if (!p.isNull())
             framesAgua.append(p);
     }
-    // Escudo en vuelo (radio = 12)
-    QPixmap escRaw = prepararFrame(":/capitan2/escudo/1.png", 1.0);
-    if (!escRaw.isNull())
-        spriteEscudo = escRaw.scaled(36, 36, Qt::KeepAspectRatio, Qt::SmoothTransformation);
-
-    // Bala enemiga
-    QPixmap balaRaw = prepararFrame(":/capitan/danio/1.png", 1.0);
-    if (!balaRaw.isNull()) {
-        const double r = nivel.getBalas().empty() ? 6.0 : nivel.getBalas().front().getRadio();
-        spriteBala = balaRaw.copy(368, 381, 294, 46)                       // quita el margen transparente
-                         .scaledToHeight(int(3.1 * r), Qt::SmoothTransformation); // punta ≈ diámetro de la hitbox
-    }
-
-    // Piso, muros, esbirro y jefe
-    QPixmap pisoRaw = prepararFrame(":/capitan2/jefe/1.png", 1.0);
-    if (!pisoRaw.isNull())
-        spritePiso = pisoRaw.scaled(int(datos::LADO_ARENA), int(datos::LADO_ARENA), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
-
-    spriteMuroHorizontal = prepararFrame(":/capitan2/jefe/2.png", 1.0);
-    spriteMuroVertical   = prepararFrame(":/capitan2/jefe/3.png", 1.0);
-
-    QPixmap esbRaw = prepararFrame(":/capitan2/jefe/4.png", 1.0);
-    if (!esbRaw.isNull()) {
-        const int dEsb = int(nivel.getEsbirros().empty() ? 28.0 : nivel.getEsbirros().front().getRadio() * 2.2);
-        spriteEsbirro = esbRaw.scaled(dEsb, dEsb, Qt::KeepAspectRatio, Qt::SmoothTransformation);
-    }
-
-    QPixmap jefeRaw = prepararFrame(":/capitan2/jefe/5.png", 1.0);
-    const obstaculo& c = nivel.getJefe().getCuerpo();
-    if (!jefeRaw.isNull()) {
-        spriteJefe = jefeRaw.scaled(int(c.getAncho()), int(c.getAlto()), Qt::KeepAspectRatio, Qt::SmoothTransformation);
-    }
 }
 
 void vistaN2::dibujarArena()
 {
+    QPixmap spritePiso = prepararFrame(":/capitan2/jefe/1.png", 1.0);
+    if (!spritePiso.isNull())
+        spritePiso = spritePiso.scaled(int(datos::LADO_ARENA), int(datos::LADO_ARENA),
+                                       Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+    const QPixmap spriteMuroHorizontal = prepararFrame(":/capitan2/jefe/2.png", 1.0);
+    const QPixmap spriteMuroVertical   = prepararFrame(":/capitan2/jefe/3.png", 1.0);
+
     QRectF area;
     const std::vector<obstaculo>& paredes = nivel.getParedes();
     const obstaculo* cuerpoJefe = paredes.empty() ? nullptr : &paredes.back();
@@ -268,14 +255,14 @@ void vistaN2::dibujarPersonaje()
 void vistaN2::dibujarJefe()
 {
     const obstaculo& c = nivel.getJefe().getCuerpo();
-    if (!spriteJefe.isNull()) {
-        dibujoJefe = escena->addPixmap(spriteJefe);
-        dibujoJefe->setPos(c.getIzquierda() + (c.getAncho() - spriteJefe.width()) / 2.0,
-                           c.getArriba() + (c.getAlto() - spriteJefe.height()) / 2.0);
-    } else {
-        dibujoJefe = escena->addPixmap(QPixmap());
-        dibujoJefe->setPos(c.getIzquierda(), c.getArriba());
-    }
+    QPixmap sprite = prepararFrame(":/capitan2/jefe/5.png", 1.0);
+    if (!sprite.isNull())
+        sprite = sprite.scaled(int(c.getAncho()+10), int(c.getAlto()+10),
+                               Qt::KeepAspectRatio, Qt::SmoothTransformation);
+    dibujoJefe = escena->addPixmap(sprite);
+    dibujoJefe->setPos(c.getIzquierda() + (c.getAncho() - sprite.width()) / 2.0,
+                       c.getArriba() + (c.getAlto() - sprite.height()) / 2.0);
+
     dibujoJefe->setZValue(3);
     efectoCuracionJefe = new QGraphicsColorizeEffect(this);
     efectoCuracionJefe->setColor(QColor(70, 220, 110));
@@ -323,9 +310,9 @@ void vistaN2::crearBarraJefe()
     const double xBarra     = (datos::ANCHO_ESCENA - anchoBarra) / 2.0;
     const double yBarra     = 14.0;
 
-    barraJefeFondo = escena->addRect(xBarra, yBarra, anchoBarra, altoBarra,
-                                     QPen(Qt::NoPen), QBrush(QColor(35, 35, 45, 220)));
-    barraJefeFondo->setZValue(100);
+    QGraphicsRectItem* fondo = escena->addRect(xBarra, yBarra, anchoBarra, altoBarra,
+                                               QPen(Qt::NoPen), QBrush(QColor(35, 35, 45, 220)));
+    fondo->setZValue(100);
 
     barraJefeRelleno = escena->addRect(xBarra, yBarra, anchoBarra, altoBarra,
                                        QPen(Qt::NoPen), QBrush(QColor(210, 45, 45)));
@@ -497,12 +484,17 @@ void vistaN2::dibujarAguas()
 void vistaN2::crearEsbirros()
 {
     const std::vector<esbirro>& esbirros = nivel.getEsbirros();
+    QPixmap sprite = prepararFrame(":/capitan2/jefe/4.png", 1.0);
+    if (!sprite.isNull()) {
+        const int d = int(esbirros.empty() ? 28.0 : esbirros.front().getRadio() * 2.2);
+        sprite = sprite.scaled(d, d, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+    }
     dibujoEsbirros.reserve(int(esbirros.size()));
     for (size_t i = 0; i < esbirros.size(); ++i)
     {
-        QGraphicsPixmapItem* it = escena->addPixmap(spriteEsbirro);
-        if (!spriteEsbirro.isNull())
-            it->setOffset(-spriteEsbirro.width() / 2.0, -spriteEsbirro.height() / 2.0);
+        QGraphicsPixmapItem* it = escena->addPixmap(sprite);
+        if (!sprite.isNull())
+            it->setOffset(-sprite.width() / 2.0, -sprite.height() / 2.0);
         it->setZValue(4);
         it->setVisible(false);
         dibujoEsbirros.append(it);
@@ -575,15 +567,24 @@ void vistaN2::avanzarLogica(double dt)
     tiempoAnimacion += dt;
     if (tiempoLanzando > 0.0)
         tiempoLanzando = std::max(0.0, tiempoLanzando - dt);
+
+    const capitanN2& cap = nivel.getPersonaje();
+    const jefe& jefeN = nivel.getJefe();
+
     const int dx = nivel.getPersonaje().getDireccionX();
     const int dy = nivel.getPersonaje().getDireccionY();
     if (dx != 0 || dy != 0) {
         ultimaDirX = dx;
         ultimaDirY = dy;
     }
+
+    const int vidasPrevias = cap.getVidas();
+    const int vidaJefePrevia = jefeN.getVida();
+    const bool jefeEstabaVivo = jefeN.estaVivo();
+    const bool fortachonPrevio = cap.getFortachon() && cap.getTFortachon() > 0.0;
+
     nivel.actualizar(dt);
 
-    const capitanN2& cap = nivel.getPersonaje();
     const int vidasActuales = cap.getVidas();
     if (vidasActuales < vidasPrevias) {
         if (vidasActuales <= 0)
@@ -591,22 +592,18 @@ void vistaN2::avanzarLogica(double dt)
         else
             reproducirDanio();
     }
-    vidasPrevias = vidasActuales;
 
     const bool fortachonAhora = cap.getFortachon() && cap.getTFortachon() > 0.0;
     if (fortachonAhora && !fortachonPrevio) {
         reproducirBufo();
     }
-    fortachonPrevio = fortachonAhora;
 
     const int vidaJefeActual = nivel.getJefe().getVida();
     if (vidaJefeActual < vidaJefePrevia)
         reproducirGolpeJefe();
-    vidaJefePrevia = vidaJefeActual;
 
     const bool jefeVivo = nivel.getJefe().estaVivo();
     if (jefeEstabaVivo && !jefeVivo) {
-        jefeEstabaVivo = false;
         terminar(true);
         return;
     }

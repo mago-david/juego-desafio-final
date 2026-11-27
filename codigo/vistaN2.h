@@ -26,7 +26,6 @@ private:
     QVector<QGraphicsPixmapItem*> dibujoHumos;
     QVector<QGraphicsPixmapItem*> dibujoAguas;
     QVector<QGraphicsPixmapItem*> dibujoEsbirros;
-    QGraphicsRectItem* barraJefeFondo;
     QGraphicsRectItem* barraJefeRelleno;
     QGraphicsRectItem* barraJefeBorde;
     QGraphicsColorizeEffect* efectoCuracionJefe;
@@ -47,8 +46,6 @@ private:
     QVector<QPixmap> framesIzquierdaCaminar;
     QVector<QPixmap> framesIzquierdaLanzar;
 
-    QPixmap spriteEscudo;
-    QPixmap spriteBala;
     QPixmap spriteBufo;
     QVector<QPixmap> framesHumo;
     QVector<QPixmap> framesAgua;
@@ -59,22 +56,12 @@ private:
     QVector<QPixmap> cacheAguas;
     QSize tamCacheAgua;
 
-    // Sprites Arena / Jefe / Esbirros (capitan2/jefe/1..5.png)
-    QPixmap spritePiso;
-    QPixmap spriteMuroHorizontal;
-    QPixmap spriteMuroVertical;
-    QPixmap spriteEsbirro;
-    QPixmap spriteJefe;
 
     // Estado visual / animación
     int ultimaDirX;
     int ultimaDirY;
     double tiempoAnimacion;
     double tiempoLanzando;
-    int vidasPrevias;
-    bool jefeEstabaVivo;
-    int vidaJefePrevia;
-    bool fortachonPrevio;
 
     bool teclaW;
     bool teclaA;
@@ -101,6 +88,7 @@ private:
     void crearBarraJefe();
     void actualizarBarraJefe();
     const QPixmap& elegirFrameCapitan() const;
+    void crearProyectiles();
 
 protected:
     void avanzarLogica(double dt) override;
