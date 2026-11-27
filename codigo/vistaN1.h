@@ -10,6 +10,7 @@
 class QGraphicsEllipseItem;
 class QGraphicsPixmapItem;
 class QGraphicsColorizeEffect;
+class QGraphicsSimpleTextItem;
 class QGraphicsRectItem;
 
 class vistaN1 : public vistaNivel
@@ -30,6 +31,13 @@ private:
     bool mirandoIzq;
     QVector<QGraphicsPixmapItem*> capasItem;
     QVector<double> capasFactor;
+
+    //tiempo
+    double tiempoRestante;
+    bool muertePorTiempoEjecutada;
+    bool cronometroActivo;
+    QGraphicsRectItem* fondoCronometro;
+    QGraphicsSimpleTextItem* textoTiempoRestante;
 
     // Proyectiles y gas
     QVector<QGraphicsPixmapItem*> dibujoBalas;

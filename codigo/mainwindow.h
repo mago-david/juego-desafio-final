@@ -2,7 +2,8 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-
+#include <QMediaPlayer>
+#include <QAudioOutput>
 class QStackedWidget;
 class QWidget;
 class vistaNivel;
@@ -22,6 +23,8 @@ private:
     vistaNivel* vista;
     int nivelActual;
     Dificultad dificultadActual;
+    QMediaPlayer* musica;
+    QAudioOutput* salidaMusica;
 
     QWidget* crearMenuPrincipal();
     QWidget* crearPantallaTutorial(const QString& titulo, const QString& contenido);

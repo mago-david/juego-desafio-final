@@ -41,5 +41,7 @@ const int NUM_ATAQUES=3;
 const int NUM_BOMBAS = 6;
 //generador mt19937 compartido (se define en jefe.cpp y se reutiliza en nivel2)
 extern std::mt19937 generador;
+
+const double DIST_MURO_NORMAL   = 500.0;
 }
 #endif // DATOS_H

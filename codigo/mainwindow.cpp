@@ -17,10 +17,21 @@ MainWindow::MainWindow(QWidget* parent)
     paginaSelectorNiveles(nullptr),
     vista(nullptr),
     nivelActual(1),
-    dificultadActual(Normal)
+    dificultadActual(Normal),
+    musica(new QMediaPlayer(this)),
+    salidaMusica(new QAudioOutput(this))
 {
-    setCentralWidget(pilaVistas);
+    musica->setAudioOutput(salidaMusica);   // aqui se paga la inicializacion, con el menu en pantalla
+    salidaMusica->setVolume(0.45f);
+    musica->setLoops(QMediaPlayer::Infinite);
 
+    setCentralWidget(pilaVistas);
+    pilaVistas->setObjectName("pilaMenuGlobal");
+    pilaVistas->setStyleSheet(
+        "#pilaMenuGlobal {"
+        " border-image: url(:/capitan/fondo/0.png) 0 0 0 0 stretch stretch;"
+        "}"
+        );
     paginaMenu = crearMenuPrincipal();
     paginaTutorialN1 = crearPantallaTutorial(
         "Tutorial - Nivel 1",
@@ -41,6 +52,7 @@ MainWindow::MainWindow(QWidget* parent)
     pilaVistas->addWidget(paginaTutorialN2);
     pilaVistas->addWidget(paginaSelectorNiveles);
     pilaVistas->setCurrentWidget(paginaMenu);
+    setStyleSheet("QMainWindow { background-color: black; }");
 }
 
 QWidget* MainWindow::crearMenuPrincipal()
@@ -104,7 +116,7 @@ QWidget* MainWindow::crearMenuPrincipal()
     layout->addWidget(btnTutorialN2);
     layout->addWidget(btnSelectorNiv);
 
-    panel->setStyleSheet("background-color: #121318;");
+    panel->setStyleSheet("background: transparent;");
     return panel;
 }
 
@@ -143,7 +155,7 @@ QWidget* MainWindow::crearPantallaTutorial(const QString& titulo, const QString&
     layout->addWidget(lblTexto);
     layout->addWidget(btnVolver, 0, Qt::AlignCenter);
 
-    panel->setStyleSheet("background-color: #121318;");
+    panel->setStyleSheet("background: transparent;");
     return panel;
 }
 
@@ -188,7 +200,7 @@ QWidget* MainWindow::crearPantallaSelectorNiveles()
     layout->addWidget(btnNivel2);
     layout->addWidget(btnVolver);
 
-    panel->setStyleSheet("background-color: #121318;");
+    panel->setStyleSheet("background: transparent;");
     return panel;
 }
 
@@ -243,6 +255,14 @@ void MainWindow::cargarNivel(int numeroNivel)
     pilaVistas->addWidget(vista);
     pilaVistas->setCurrentWidget(vista);
     vista->iniciar();
+    //rutas de musica
+    const QUrl cancion(nivelActual == 1 ? "qrc:/capitan/sonidos_fondo/1.mp3"
+                                        : "qrc:/capitan/sonidos_fondo/2.mp3");
+    if (musica->source() != cancion)
+        musica->setSource(cancion);
+    musica->setPosition(0);
+    musica->play();
+    connect(vista, &vistaNivel::terminado, this, [this](bool) { musica->stop(); });
 }
 
 void MainWindow::reiniciarNivel()
@@ -252,6 +272,7 @@ void MainWindow::reiniciarNivel()
 
 void MainWindow::abrirMenu()
 {
+    musica->stop();
     limpiarVistaActual();
     setWindowTitle("Menú Principal");
     pilaVistas->setCurrentWidget(paginaMenu);

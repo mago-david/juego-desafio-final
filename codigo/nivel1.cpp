@@ -215,7 +215,7 @@ void nivel1::actualizar(double dt)
     if (!muro.getactivo() && personaje.getPosicion().x() >= X_ACTIVARMURO)
         muro.setactivo(true);
 
-    muro.actualizar(dt);
+    muro.actualizar(dt,personaje.getPosicion().x());
 
     if (muro.aplicar(personaje))
         return;                       // toco el borde izquierdo, muere al instante
@@ -374,6 +374,23 @@ void nivel1::actualizarProyectiles(double dt)
             continue;
         l.actualizar(dt);
         chocarCon(l,true); // rebota y pierde energia hasta quedarse sin rebotes
+
+        //rebotes con el muro perseguidor
+        if (l.estaActivo() && muro.getactivo())
+        {
+            const double r = l.getRadio();
+            if (l.getPosicion().x() - r < limiteIzq)
+            {
+                l.setPosicion(QPointF(limiteIzq + r, l.getPosicion().y()));   // sacarla del muro
+                if (l.getVelocidad().x() < 0.0)                               // solo si venia hacia el
+                {
+                    l.setVelocidad(QPointF(-l.getVelocidad().x(),
+                                           l.getVelocidad().y()));
+                    l.registrarRebote();
+                }
+            }
+        }
+
         if (l.estaActivo() && personaje.esGolpeado(l))
             l.setActivo(false);
         // si sale de pantalla sin haber explotado, se apaga sin lanzar nube

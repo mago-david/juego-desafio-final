@@ -10,6 +10,7 @@
 #include <QPixmap>
 #include <QSoundEffect>
 #include <QUrl>
+#include <QThread>
 #include "proyectil.h"
 
 class QGraphicsScene;
@@ -52,7 +53,8 @@ private:
     QSoundEffect* sonidoBufo;
     QSoundEffect* sonidoGolpeJefe;
     int turnoGolpe;
-
+    QThread* hiloAudio;
+    void tocar(QSoundEffect* s);
 private slots:
     void avanzar();
     void actualizarFundidoMuerte();
@@ -105,6 +107,7 @@ protected:
     void reproducirGolpeJefe();
 
 public:
+    ~vistaNivel();
     void iniciar();
     void pausar();
     double getAcumulado() const;

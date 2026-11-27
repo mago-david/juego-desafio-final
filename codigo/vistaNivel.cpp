@@ -34,6 +34,7 @@ vistaNivel::vistaNivel(QWidget* parent)
     sonidoMuerte(nullptr),
     sonidoBufo(nullptr),
     turnoGolpe(0),
+    hiloAudio(nullptr),
     escena(new QGraphicsScene(this))
 {
     setScene(escena);
@@ -58,25 +59,47 @@ vistaNivel::vistaNivel(QWidget* parent)
 
     const qreal volumenEfectos = 0.8;
     const qreal volumenGolpejefe= 0.35;
-    sonidoGolpe1 = new QSoundEffect(this);
+    sonidoGolpe1 = new QSoundEffect();
     sonidoGolpe1->setSource(QUrl(QStringLiteral("qrc:/capitan/sonidos_danio/1.wav")));
     sonidoGolpe1->setVolume(volumenEfectos);
 
-    sonidoGolpe2 = new QSoundEffect(this);
+    sonidoGolpe2 = new QSoundEffect();
     sonidoGolpe2->setSource(QUrl(QStringLiteral("qrc:/capitan/sonidos_danio/2.wav")));
     sonidoGolpe2->setVolume(volumenEfectos);
 
-    sonidoMuerte = new QSoundEffect(this);
+    sonidoMuerte = new QSoundEffect();
     sonidoMuerte->setSource(QUrl(QStringLiteral("qrc:/capitan/sonidos_danio/3.wav")));
     sonidoMuerte->setVolume(volumenEfectos);
 
-    sonidoBufo = new QSoundEffect(this);
+    sonidoBufo = new QSoundEffect();
     sonidoBufo->setSource(QUrl(QStringLiteral("qrc:/capitan/bufo/bufo.wav")));
     sonidoBufo->setVolume(volumenEfectos);
 
-    sonidoGolpeJefe= new QSoundEffect(this);
+    sonidoGolpeJefe= new QSoundEffect();
     sonidoGolpeJefe->setSource(QStringLiteral("qrc:/capitan/sonidos_danio/4.wav"));
     sonidoGolpeJefe->setVolume(volumenGolpejefe);
+
+    hiloAudio = new QThread(this);
+    QSoundEffect* todos[] = { sonidoGolpe1, sonidoGolpe2, sonidoMuerte, sonidoBufo, sonidoGolpeJefe };
+    for (QSoundEffect* s : todos)
+    {
+        s->moveToThread(hiloAudio);
+        connect(hiloAudio, &QThread::finished, s, &QObject::deleteLater);
+    }
+    hiloAudio->start();
+
+}
+
+vistaNivel::~vistaNivel()
+{
+    hiloAudio->quit();
+    hiloAudio->wait(); //sonidos borrados
+}
+
+void vistaNivel::tocar(QSoundEffect* s)
+{
+    if (s)
+        QMetaObject::invokeMethod(s, "play", Qt::QueuedConnection);
 }
 
 void vistaNivel::setUltimoNivel(bool ultimo)
@@ -460,25 +483,17 @@ void vistaNivel::reproducirDanio()
 {
     QSoundEffect* actual = (turnoGolpe % 2 == 0) ? sonidoGolpe1 : sonidoGolpe2;
     turnoGolpe = (turnoGolpe + 1) % 2;
-    if (actual && actual->status() != QSoundEffect::Error) {
-        actual->play();
-    }
+    tocar(actual);
 }
 void vistaNivel::reproducirMuerte()
 {
-    if (sonidoMuerte && sonidoMuerte->status() != QSoundEffect::Error) {
-        sonidoMuerte->play();
-    }
+    tocar(sonidoMuerte);
 }
 void vistaNivel::reproducirBufo()
 {
-    if (sonidoBufo && sonidoBufo->status() != QSoundEffect::Error) {
-        sonidoBufo->play();
-    }
+    tocar(sonidoBufo);
 }
 void vistaNivel::reproducirGolpeJefe()
 {
-    if (sonidoGolpeJefe && sonidoGolpeJefe->status() != QSoundEffect::Error) {
-        sonidoGolpeJefe->play();
-    }
+    tocar(sonidoGolpeJefe);
 }
